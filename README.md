@@ -1,26 +1,28 @@
 # lein-zinc
 
-A Leiningen plugin to do many wonderful things.
+A Leiningen plugin to compile scala and java source code with [Typesafe zinc](https://github.com/typesafehub/zinc), which is a stand-alone version of scala incremental compiler forked from sbt. 
 
 ## Usage
 
-FIXME: Use this for user-level plugins:
+Put scala source code under `src/scala`.
 
 Put `[lein-zinc "0.1.0-SNAPSHOT"]` into the `:plugins` vector of your
-`:user` profile, or if you are on Leiningen 1.x do `lein plugin install
-lein-zinc 0.1.0-SNAPSHOT`.
+`:user` profile.
 
-FIXME: Use this for project-level plugins:
+Add `[org.scala-lang/scala-library "your_scala_version"]` to `:dependencies`.
 
-Put `[lein-zinc "0.1.0-SNAPSHOT"]` into the `:plugins` vector of your project.clj.
+To automically run zinc compiler in regular lifecycle of leiningen, add `["zinc"]` to `:prep-tasks`. 
 
-FIXME: and add an example usage that actually makes sense:
+Alternatively, run the task directly from the command line.  
 
     $ lein zinc
 
+## Options
+
+TBD
+
 ## License
 
-Copyright © 2014 FIXME
+Copyright © 2014 Kenji Nakamura
 
-Distributed under the Eclipse Public License either version 1.0 or (at
-your option) any later version.
+Distributed under the Eclipse Public License either version 1.0 or any later version.
