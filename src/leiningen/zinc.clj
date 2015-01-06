@@ -80,10 +80,10 @@
 ;; code can assure the jars are in maven local repo.
 (defn zinc-setup "instantiate zinc setup object" [] 
   (Setup/create 
-    (to-file (maven-local-repo-path "org.scala-lang/scala-compiler" "2.10.4"))
-    (to-file (maven-local-repo-path "org.scala-lang/scala-library" "2.10.4"))
+    (to-file (maven-local-repo-path "org.scala-lang/scala-compiler" "2.11.4"))
+    (to-file (maven-local-repo-path "org.scala-lang/scala-library" "2.11.4"))
     [(to-file 
-      (maven-local-repo-path "org.scala-lang/scala-reflect" "2.10.4")) ]
+      (maven-local-repo-path "org.scala-lang/scala-reflect" "2.11.4")) ]
     (to-file (maven-local-repo-path "com.typesafe.sbt/sbt-interface" "0.13.6"))
     (to-file (maven-local-repo-path 
               "com.typesafe.sbt/compiler-interface" "0.13.6" "sources"))
