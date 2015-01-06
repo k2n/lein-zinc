@@ -5,6 +5,10 @@ A Leiningen plugin to compile scala and java source code with [Typesafe zinc](ht
 [![Circle CI](https://circleci.com/gh/k2n/lein-zinc.svg?style=svg)](https://circleci.com/gh/k2n/lein-zinc)
 [![Dependencies Status](http://jarkeeper.com/k2n/lein-zinc/status.svg)](http://jarkeeper.com/k2n/lein-zinc)
 
+## Status
+
+*This project is still under development and hasn't released yet.*
+
 ## Usage
 
 Put scala source code under `src/scala`.
