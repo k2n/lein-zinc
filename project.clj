@@ -15,7 +15,7 @@
                  [com.typesafe.sbt/sbt-interface "0.13.6"]
                  [com.typesafe.sbt/compiler-interface "0.13.6" 
                   :classifier "sources"]]
-  :plugins [[lein-expectations "0.0.7"]
+  :plugins [[lein-expectations "0.0.8"]
             [lein-ancient "0.5.5"]]
   :aliases  {"test"  ["expectations"]}
   :profiles {:dev {:global-vars {*warn-on-reflection* true}
