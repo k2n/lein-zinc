@@ -6,6 +6,7 @@
   :eval-in-leiningen true
   :dependencies [[com.typesafe.zinc/zinc "0.3.5.3"]
                  [leiningen "2.5.0"]
+                 [org.clojure/core.typed "0.2.77"]
                 ;; TODO remove the following deps once the plugin 
                 ;; downloads the jars
                 ;; used by sbt.
