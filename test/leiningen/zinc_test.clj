@@ -55,4 +55,17 @@
 (expect '["foo", "bar"]
   (#'leiningen.zinc/to-seq "foo, bar" ","))
 
+(expect true
+  (#'leiningen.zinc/ends-with-suffix? "foo.txt" ["txt" "log"]))
+
+(expect false
+  (#'leiningen.zinc/ends-with-suffix? "foo.txt" ["xml" "log"]))
+
+(expect false
+  (#'leiningen.zinc/ends-with-suffix? "foo.txt.un~" ["txt" "log"]))
+
+(expect  (new java.io.File (str (System/getProperty "user.dir") "/test-project/src/scala/Test.scala"))
+   (first (#'leiningen.zinc/source-file-seq "test-project/src/scala")))
+
+
 ;; vim: set ts=2 sw=2 cc=80 et: 

@@ -3,8 +3,10 @@
             [leiningen.core.main :as main]
             [leiningen.core.eval :as eval]
             [leiningen.core.project :as project]
-            [clojure.string :as string])
+            [clojure.string :as string]
+            [clojure.java.io :as io])
   (:import  (com.typesafe.zinc Inputs Setup Util)
+            (java.io File)
             (sbt Level)
             (sbt.inc IncOptions)))
 
@@ -60,9 +62,9 @@
                if the path is relative" 
   [^String path]
   (if path
-    (if (.startsWith path "/")
-      (new java.io.File path)
-      (new java.io.File (str (user-dir) "/" path)))))
+     (if (.startsWith path "/")
+      (io/file path)
+      (io/file (str (user-dir) "/" path)))))
 
 (defn- to-files "convert the paths delimited by the delimiter to seq of 
                 java.io.File" 
@@ -94,6 +96,21 @@
 (defn- zinc-options-in  [project]
   (:zinc-options project))
 
+(defn- is-dir? "doc-string" [^File file]
+  (.isDirectory file))
+
+(defn- ends-with-suffix? "doc-string" [path suffixes]
+  (not= nil (some #(.endsWith path %) suffixes)))
+
+(defn- source-file-seq "doc-string" [^String source]
+  (->> (file-seq (to-file source))
+       (filter #(not (is-dir? %)))
+       (filter #(ends-with-suffix? (.getCanonicalPath %) 
+                                   [".scala" ".java"]))))
+
+(defn- sources-file-seq "doc-string" [sources]
+  (flatten (map #(source-file-seq %) sources)))
+
 (defn zinc-logger "instantiate zinc logger" [project]
   (let [{:keys [level colorize?]
          :or {level "info"
@@ -105,16 +122,14 @@
   (com.typesafe.zinc.Compiler/getOrCreate zinc-setup zinc-logger))
 
 ;; TODO rename parameters to clojure style
-;; TODO create a function to return the seq of files under the specified 
-;; directories for scalaSources
 ;; TODO convert options type to take seq in project.clj
 ;; TODO implement the logic to inherit the analysis cache in the
 ;; parent projects
 (defn zincInputs "instantiate zinc inputs" [project inc-options]
   (let [classpath (classpath/get-classpath-string project)
-        {:keys [scalaSources classesDirectory scalacOptions javacOptions 
+        {:keys [sources classesDirectory scalacOptions javacOptions 
                 analysisCache analysisMap compileOrder mirrorAnalysisCache]
-         :or {scalaSources "src/scala/Test.scala"
+         :or {sources ["src/scala" "src/java"]
               classesDirectory "target/classes"
               scalacOptions []
               javacOptions []
@@ -124,10 +139,10 @@
               mirrorAnalysisCache false}} (zinc-options-in project)]
   (main/debug "classpath: " (map #(to-file %) (to-seq classpath ":")))
   (Inputs/create (map #(to-file %) (to-seq classpath ":")) 
-                 (map #(to-file %) (to-seq scalaSources ",")) 
+                 (sources-file-seq sources) 
                  (to-file classesDirectory) (to-seq scalacOptions ",")
-                 (to-seq javacOptions ",") (to-file analysisCache) analysisMap 
-                 compileOrder inc-options mirrorAnalysisCache)))
+                 (to-seq javacOptions ",") (to-file analysisCache) 
+                 analysisMap compileOrder inc-options mirrorAnalysisCache)))
 
 (defn inc-options "options for sbt incremental compiler" [project]
   (let [defaultIncOptions (sbt.inc.IncOptions/Default) 
