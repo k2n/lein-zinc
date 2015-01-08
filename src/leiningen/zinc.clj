@@ -13,10 +13,10 @@
 ;; TODO :scala-source-path needs to be unified with the one 
 ;; passed into sbt.
 ;; TODO :scalac-options
-(comment (defn task-props "doc-string" [project]
-  (merge {:srcdir (:scala-source-path project)
-          :destdir (:compile-path project)}
-          (:scalac-options project))))
+;(defn task-props "doc-string" [project]
+;  (merge {:prep-tasks (update-prep-tasks project)
+;          :destdir (:compile-path project)}
+;          project))
 
 (defn- scala-library "obtain scala-library dependency from project.clj" 
   [project]
@@ -173,7 +173,7 @@
   (let [profile (or (:zinc (:profiles project)) zinc-profile)
         project (project/merge-profiles project [profile])
         logger (zinc-logger project)]
-    (def post-project project)
+    (main/debug "project: " project)
     (main/debug "user dir: " (user-dir))  
     (.compile (zincCompiler (zinc-setup) logger) 
           (zincInputs project (inc-options project)) logger)))
