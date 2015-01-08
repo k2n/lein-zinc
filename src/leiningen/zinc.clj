@@ -3,6 +3,7 @@
             [leiningen.core.main :as main]
             [leiningen.core.eval :as eval]
             [leiningen.core.project :as project]
+            [leiningen.help :as help]
             [clojure.string :as string]
             [clojure.java.io :as io])
   (:import  (com.typesafe.zinc Inputs Setup Util)
@@ -121,28 +122,33 @@
   [zinc-setup zinc-logger]
   (com.typesafe.zinc.Compiler/getOrCreate zinc-setup zinc-logger))
 
-;; TODO rename parameters to clojure style
 ;; TODO convert options type to take seq in project.clj
 ;; TODO implement the logic to inherit the analysis cache in the
 ;; parent projects
-(defn zincInputs "instantiate zinc inputs" [project inc-options]
+(defn zincInputs "instantiate zinc inputs" [project inc-options test?]
   (let [classpath (classpath/get-classpath-string project)
-        {:keys [sources classesDirectory scalacOptions javacOptions 
-                analysisCache analysisMap compileOrder mirrorAnalysisCache]
-         :or {sources ["src/scala" "src/java"]
-              classesDirectory "target/classes"
-              scalacOptions []
-              javacOptions []
-              analysisCache "target/zinc-analysis-cache"
-              analysisMap {(to-file "/tmp") (to-file "/tmp")}
-              compileOrder "Mixed"
-              mirrorAnalysisCache false}} (zinc-options-in project)]
+        {:keys [sources test-sources classes test-classes scalac-options 
+                javac-options analysis-cache analysis-map compile-order 
+                mirror-analysis-cache]
+         :or {sources               ["src/scala" "src/java"]
+              test-sources          ["test/scala" "test/java"]
+              classes               "target/classes"
+              test-classes          "target/test-classes"
+              scalac-options        []
+              javac-options         []
+              analysis-cache        "target/analysis/compile"
+              analysis-map          {(to-file "/tmp") (to-file "/tmp")}
+              compile-order         "Mixed"
+              mirror-analysis-cache false}} (zinc-options-in project)]
   (main/debug "classpath: " (map #(to-file %) (to-seq classpath ":")))
   (Inputs/create (map #(to-file %) (to-seq classpath ":")) 
-                 (sources-file-seq sources) 
-                 (to-file classesDirectory) (to-seq scalacOptions ",")
-                 (to-seq javacOptions ",") (to-file analysisCache) 
-                 analysisMap compileOrder inc-options mirrorAnalysisCache)))
+                 (if test? (sources-file-seq test-sources) 
+                           (sources-file-seq sources)) 
+                 (if test? (to-file test-classes) (to-file classes)) 
+                 (to-seq scalac-options ",")
+                 (to-seq javac-options ",") (to-file analysis-cache) 
+                 analysis-map compile-order inc-options 
+                 mirror-analysis-cache)))
 
 (defn inc-options "options for sbt incremental compiler" [project]
   (let [defaultIncOptions (sbt.inc.IncOptions/Default) 
@@ -165,17 +171,34 @@
         apiDiffContextSize apiDumpDirectory transactional
         backup recompileOnMacroDef nameHashing))) 
 
+(defn zinc-compile 
+  "Compile Java and Scala source." 
+  [project]
+  (let [logger (zinc-logger project)]
+    (.compile (zincCompiler (zinc-setup) logger) 
+              (zincInputs project 
+              (inc-options project) false) logger)))
+
+(defn zinc-test-compile 
+  "Compile Java and Scala test source." 
+  [project]
+  (let [logger (zinc-logger project)]
+    (.compile (zincCompiler (zinc-setup) logger) 
+              (zincInputs project 
+              (inc-options project) true) logger)))
+
 (def zinc-profile {:dependencies [['lein-zinc "0.1.0-SNAPSHOT"]]})
 
 (defn zinc 
-  "Typesafe scala zinc incremental compiler plugin."
-  [project]
-  (let [profile (or (:zinc (:profiles project)) zinc-profile)
-        project (project/merge-profiles project [profile])
-        logger (zinc-logger project)]
-    (main/debug "project: " project)
-    (main/debug "user dir: " (user-dir))  
-    (.compile (zincCompiler (zinc-setup) logger) 
-          (zincInputs project (inc-options project)) logger)))
+  "Compile Scala and Java code with Typesafe zinc incremental compiler."
+  {:subtasks [#'zinc-compile #'zinc-test-compile]}
+    ([project] (zinc-compile project)(zinc-test-compile project))
+    ([project subtask & options]
+      (let [profile (or (:zinc (:profiles project)) zinc-profile)
+            project (project/merge-profiles project [profile])]
+        (case subtask
+          "zinc-compile" (zinc-compile project)
+          "zinc-test-compile" (zinc-test-compile project)
+          (help/help project "zinc")))))
 
 ;; vim: set ts=2 sw=2 cc=80 et: 
