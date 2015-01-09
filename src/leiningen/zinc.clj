@@ -6,7 +6,7 @@
             [leiningen.help :as help]
             [clojure.string :as string]
             [clojure.java.io :as io])
-  (:import  (com.typesafe.zinc Inputs Setup Util)
+  (:import  (com.typesafe.zinc Inputs Nailgun Setup Util)
             (java.io File)
             (sbt Level)
             (sbt.inc IncOptions)))

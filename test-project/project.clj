@@ -6,7 +6,7 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [org.scala-lang/scala-library "2.11.4"]]
-  :prep-tasks ["zinc"]
+  :prep-tasks ["zinc" "compile"]
   :profiles {:zinc-custom-options 
              {:zinc-options 
               {:logging 
