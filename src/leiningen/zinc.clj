@@ -11,14 +11,6 @@
             (sbt Level)
             (sbt.inc IncOptions)))
 
-;; TODO :scala-source-path needs to be unified with the one 
-;; passed into sbt.
-;; TODO :scalac-options
-;(defn task-props "doc-string" [project]
-;  (merge {:prep-tasks (update-prep-tasks project)
-;          :destdir (:compile-path project)}
-;          project))
-
 (defn- scala-library "obtain scala-library dependency from project.clj" 
   [project]
   (let [{:keys [dependencies]} project
