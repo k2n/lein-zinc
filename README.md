@@ -24,7 +24,7 @@ Alternatively, run the task directly from the command line.
 
     $ lein zinc
 
-It triggers compilation of scala source, and then scala test source. 
+It triggers compilation of scala source and then scala test source. 
 
 ## Sub tasks
 
@@ -42,8 +42,7 @@ Compile scala test source code only.
 * Create a profile containing `:zinc-options` map. 
 * `:zinc-options` map may contain sub-maps `:logging`, `:inputs`, `:incremental`,
  and/or `:sbt-version`. 
-* See the output of `zinc
-* See [sbt.inc.IncOptions](http://www.scala-sbt.org/0.13.6/sxr/sbt/inc/IncOptions.scala.html#sbt.inc;IncOptions) for the details of available options in `:incremental`. 
+* See "Avaiable Options" below for the complete guide.
 
 ```clj
 (defproject test-project "0.1.0-SNAPSHOT"
