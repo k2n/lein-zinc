@@ -167,26 +167,26 @@
 
 (defn inc-options "Generates options for sbt incremental compiler." [project]
   (let [defaultIncOptions (sbt.inc.IncOptions/Default) 
-        {:keys [transitive-step recompile-all-fraction relations-debug
-                api-debug api-diff-context-size api-dump-directory 
-                transactional backup recompile-on-macro-def name-hashing]
+        {:keys [transitive-step recompile-all-fraction relations-debug?
+                api-debug? api-diff-context-size api-dump-directory 
+                transactional? backup recompile-on-macro-def name-hashing?]
          :or { transitive-step (.transitiveStep defaultIncOptions)
                recompile-all-fraction (.recompileAllFraction defaultIncOptions)
-               relations-debug (.relationsDebug defaultIncOptions)
-               api-debug (.apiDebug defaultIncOptions)
+               relations-debug? (.relationsDebug defaultIncOptions)
+               api-debug? (.apiDebug defaultIncOptions)
                api-diff-context-size (.apiDiffContextSize defaultIncOptions)
                api-dump-directory nil
-               transactional false
+               transactional? false
                backup "target/backup"
                recompile-on-macro-def (.recompileOnMacroDef defaultIncOptions)
-               name-hashing (.nameHashing defaultIncOptions)
+               name-hashing? (.nameHashing defaultIncOptions)
              }} 
                 (:incremental (:zinc-options project))]
       (new com.typesafe.zinc.IncOptions transitive-step
-        recompile-all-fraction relations-debug api-debug
+        recompile-all-fraction relations-debug? api-debug?
         api-diff-context-size (option (to-file api-dump-directory)) 
-        transactional (option (to-file backup)) recompile-on-macro-def 
-        name-hashing))) 
+        transactional? (option (to-file backup)) recompile-on-macro-def 
+        name-hashing?))) 
 
 (defn zinc-compile "Compiles Java and Scala source." [project]
   (let [logger (zinc-logger project)]
@@ -201,11 +201,16 @@
               (inc-options project) true) logger)))
 
 (defn zinc-profile [project] 
-  (let [{:keys [sbt-version] :or {sbt-version "0.13.6"}} project
-        scala-version (dependency-version 
-                        (dependency project 'org.scala-lang/scala-library))
+  (main/info "zinc-profile project: " project)
+  (let [{:keys [sbt-version scala-version] 
+         :or {sbt-version "0.13.6"
+              scala-version (dependency-version 
+                          (dependency project 'org.scala-lang/scala-library))
+              }} project
         lein-zinc-version (dependency-version 
                             (plugin project 'lein-zinc/lein-zinc))]
+  (main/info "scala version: " scala-version)
+  (main/info "sbt version: " sbt-version)
   {:dependencies [['lein-zinc lein-zinc-version]
                   ['org.scala-lang/scala-compiler scala-version]
                   ['org.scala-lang/scala-library scala-version]
@@ -220,7 +225,8 @@
   "Compiles Scala and Java code with Typesafe zinc incremental compiler."
   {:subtasks [#'zinc-compile #'zinc-test-compile]}
     ([project] 
-      (let [profile (or (:zinc (:profiles project)) (zinc-profile project))
+      (let [profile (or (:zinc (:profiles project)) 
+                                          (zinc-profile project))
             project (project/merge-profiles project [profile])]
         (zinc-compile project)(zinc-test-compile project)))
     ([project subtask & options]

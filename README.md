@@ -36,6 +36,102 @@ Compile scala test source code only.
 
     $ lein zinc zinc-test-compile 
 
+
+## Customizing the behavior
+
+* Create a profile containing `:zinc-options` map. 
+* `:zinc-options` map may contain sub-maps `:logging`, `:inputs`, `:incremental`,
+ and/or `:sbt-version`. 
+* See the output of `zinc
+* See [sbt.inc.IncOptions](http://www.scala-sbt.org/0.13.6/sxr/sbt/inc/IncOptions.scala.html#sbt.inc;IncOptions) for the details of available options in `:incremental`. 
+
+```clj
+(defproject test-project "0.1.0-SNAPSHOT"
+  :description "test project using lein-zinc"
+  :url "http://example.com/FIXME"
+  :license {:name "Eclipse Public License"
+            :url "http://www.eclipse.org/legal/epl-v10.html"}
+            ;; specify lein-zinc plugin.
+  :plugins [[lein-zinc "0.1.0-SNAPSHOT"]]
+  :dependencies [[org.clojure/clojure "1.6.0"]
+                 ;; scala-library is required and the version specified here 
+                 ;; is used to compile if it is not overridden with 'scala-version'
+                 ;; option. See below.
+                 [org.scala-lang/scala-library "2.11.4"]]
+  ;; Specifying "zinc" here triggers scala main/source compilation on invoking
+  ;; other tasks.
+  :prep-tasks ["zinc" "compile"]
+  ;; Most of the options available in zinc compiler are available here. 
+  :profiles {:zinc-custom-options 
+             {:zinc-options 
+              {:logging 
+               {:level     "debug"
+                :colorize? false}
+               :inputs 
+                {:sources         ["src/scala" "src/java"] 
+                 :test-sources    ["test/scala" "test/java"]
+                 :classes         "target/classes"
+                 :test-classes    "target/test-classes"
+                 :scalac-options  []
+                 :javac-options   []
+                 :analysis-cache  "target/analysis/compile"
+                 :analysis-map    {"path_of_a_source_dir_of_other_project" 
+                                   "path_of_analysis-cache_of_other_project"}
+                 }
+               :incremental
+                {:transitive-step         3
+                 :recompile-all-fraction  0.5
+                 :relations-debug?        false
+                 :api-debug?              false
+                 :api-diff-context-size   5
+                 :api-dump-directory      "target/api"
+                 :transactional?          true
+                 :backup                  "target/backup"
+                 }}}
+
+            ;; It is possible to override scala and sbt version.
+             :custom-scala-version
+              {:scala-version "2.10.4"
+               :sbt-version "0.13.5"
+               :zinc-options 
+                {:logging
+                 {:level "info"}}}})
+```
+
+## Available Options
+
+```
+Output options:
+  :logging
+    :level "level"               Set log level (debug|info|warn|error)
+    :color?                      Set color in logging
+
+Compile options:
+  :inputs
+    :sources ["src_dir"...]      List of scala and java source directories
+    :test-sources ["src_dir"...] List of scala/java test source directories   
+    :classes "dir"               Destination for compiled classes
+    :scalac-options ["opt"...]   Options passed into Scala compiler
+    :javac-options ["opt"...]    Options passed into Java compiler
+    :compile-order "order"       Compile order for Scala and Java sources
+                                 (Mixed|JavaThenScala|ScalaThenJava)
+    :analysis-cache "file"       Cache file for compile analysis
+    :analysis-map {"f" "f",...}  Upstream analysis mapping (file:file,...)
+
+Incremental compiler options:
+  :incremental
+    :transitive-step <n>         Steps before transitive closure
+    :recompile-all-fraction <x>  Limit before recompiling all sources
+    :relations-debug?            Enable debug logging of analysis relations
+    :api-debug?                  Enable analysis API debugging
+    :api-dump-directory "dir"    Destination for analysis API dump
+    :api-diff-context-size <n>   Diff context size (in lines) for API debug
+    :transactional?              Restore previous class files on failure
+    :backup "dir"                Backup location (if transactional)
+    :name-hashing?               Enable improved (experimental) incremental 
+                                 compilation algorithm
+```
+
 ## License
 
 Copyright © 2014 Kenji Nakamura
