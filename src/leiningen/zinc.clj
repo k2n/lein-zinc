@@ -139,8 +139,8 @@
 (defn zincInputs "Instantiates zinc inputs." [project inc-options test?]
   (let [classpath (classpath/get-classpath-string project)
         {:keys [sources test-sources classes test-classes scalac-options 
-                javac-options analysis-cache analysis-map compile-order 
-                mirror-analysis-cache]
+                javac-options analysis-cache test-analysis-cache analysis-map 
+                compile-order mirror-analysis-cache]
          :or {sources               ["src/scala" "src/java"]
               test-sources          ["test/scala" "test/java"]
               classes               "target/classes"
@@ -148,11 +148,14 @@
               scalac-options        []
               javac-options         []
               analysis-cache        "target/analysis/compile"
+              test-analysis-cache   "target/analysis/test-compile"
               analysis-map          {"/tmp" "/tmp"}
               compile-order         "Mixed"
               mirror-analysis-cache false}} 
                                           (:inputs (:zinc-options project))]
   (main/debug "classpath: " (map #(to-file %) (to-seq classpath ":")))
+  (main/debug "sources: " sources)
+  (main/debug "test-sources: " test-sources)
   (main/debug "analysis-cache: " analysis-cache)
   (main/debug "analysis-map: " analysis-map)
   (Inputs/create (map #(to-file %) (to-seq classpath ":")) 
@@ -160,7 +163,9 @@
                            (sources-file-seq sources)) 
                  (if test? (to-file test-classes) (to-file classes)) 
                  (to-seq scalac-options ",")
-                 (to-seq javac-options ",") (to-file analysis-cache) 
+                 (to-seq javac-options ",") 
+                 (if test? (to-file test-analysis-cache) 
+                           (to-file analysis-cache)) 
                  (map-kv to-file analysis-map) 
                  compile-order inc-options 
                  mirror-analysis-cache)))
@@ -201,7 +206,6 @@
               (inc-options project) true) logger)))
 
 (defn zinc-profile [project] 
-  (main/info "zinc-profile project: " project)
   (let [{:keys [sbt-version scala-version] 
          :or {sbt-version "0.13.6"
               scala-version (dependency-version 

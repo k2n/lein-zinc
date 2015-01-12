@@ -65,15 +65,16 @@ Compile scala test source code only.
                {:level     "debug"
                 :colorize? false}
                :inputs 
-                {:sources         ["src/scala" "src/java"] 
-                 :test-sources    ["test/scala" "test/java"]
-                 :classes         "target/classes"
-                 :test-classes    "target/test-classes"
-                 :scalac-options  []
-                 :javac-options   []
-                 :analysis-cache  "target/analysis/compile"
-                 :analysis-map    {"path_of_a_source_dir_of_other_project" 
-                                   "path_of_analysis-cache_of_other_project"}
+                {:sources               ["src/scala" "src/java"] 
+                 :test-sources          ["test/scala" "test/java"]
+                 :classes               "target/classes"
+                 :test-classes          "target/test-classes"
+                 :scalac-options        []
+                 :javac-options         []
+                 :analysis-cache        "target/analysis/compile"
+                 :test-analysis-cache   "target/analysis/test-compile"
+                 :analysis-map          {"src_dir_of_other_project" 
+                                         "analysis-cache_of_other_project"}
                  }
                :incremental
                 {:transitive-step         3
@@ -113,6 +114,7 @@ Compile options:
     :compile-order "order"       Compile order for Scala and Java sources
                                  (Mixed|JavaThenScala|ScalaThenJava)
     :analysis-cache "file"       Cache file for compile analysis
+    :test-analysis-cache "file"  Cache file for test compile analysis
     :analysis-map {"f" "f",...}  Upstream analysis mapping (file:file,...)
 
 Incremental compiler options:
