@@ -5,13 +5,13 @@ A Leiningen plugin to compile scala and java source code with [Typesafe zinc](ht
 [![Circle CI](https://circleci.com/gh/k2n/lein-zinc.svg?style=svg)](https://circleci.com/gh/k2n/lein-zinc)
 [![Dependencies Status](http://jarkeeper.com/k2n/lein-zinc/status.svg)](http://jarkeeper.com/k2n/lein-zinc)
 
-## Status
+## The latest version
 
-*This project is still under development and hasn't released yet.*
+[![Clojars Project](http://clojars.org/lein-zinc/latest-version.svg)](http://clojars.org/lein-zinc)
 
 ## Usage
 
-Put scala source code under `src/scala`.
+Put scala source code under `src/scala`, and test code under `test/scala`.
 
 Put `[lein-zinc "0.1.0-SNAPSHOT"]` into the `:plugins` vector of your
 `:user` profile.
@@ -24,9 +24,17 @@ Alternatively, run the task directly from the command line.
 
     $ lein zinc
 
-## Options
+It triggers compilation of scala source, and then scala test source. 
 
-TBD
+## Sub tasks
+
+Compile scala main source code only. 
+
+    $ lein zinc zinc-compile 
+
+Compile scala test source code only. 
+
+    $ lein zinc zinc-test-compile 
 
 ## License
 

@@ -33,6 +33,7 @@
         dep (first (filter (fn [plugin]
                   (let [[id ver] plugin]
                     (= id plugin-id))) plugins))]
+    (main/debug "plugins: " plugins)
     (if dep dep 
         (main/warn (str plugin-id " is not defined in 
                     :plugins of project.clj." )))))
@@ -135,8 +136,6 @@
   [zinc-setup zinc-logger]
   (com.typesafe.zinc.Compiler/getOrCreate zinc-setup zinc-logger))
 
-;; TODO implement the logic to inherit the analysis cache in the
-;; parent projects
 (defn zincInputs "Instantiates zinc inputs." [project inc-options test?]
   (let [classpath (classpath/get-classpath-string project)
         {:keys [sources test-sources classes test-classes scalac-options 
@@ -205,10 +204,8 @@
   (let [{:keys [sbt-version] :or {sbt-version "0.13.6"}} project
         scala-version (dependency-version 
                         (dependency project 'org.scala-lang/scala-library))
-        ; TODO remove hard-coded line below once the plugin is released and 
-        ; available from clojar.
-        ;lein-zinc-version (dependency-version (plugin project 'lein-zinc))]
-        lein-zinc-version "0.1.0-SNAPSHOT"]
+        lein-zinc-version (dependency-version 
+                            (plugin project 'lein-zinc/lein-zinc))]
   {:dependencies [['lein-zinc lein-zinc-version]
                   ['org.scala-lang/scala-compiler scala-version]
                   ['org.scala-lang/scala-library scala-version]
