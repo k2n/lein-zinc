@@ -14,9 +14,9 @@ A Leiningen plugin to compile scala and java source code with [Typesafe zinc](ht
 Put scala source code under `src/scala`, and test code under `test/scala`.
 
 Put `[lein-zinc "0.1.0-SNAPSHOT"]` into the `:plugins` vector of your
-`:user` profile.
+`project.clj`.
 
-Add `[org.scala-lang/scala-library "your_scala_version"]` to `:dependencies`.
+Add `[org.scala-lang/scala-library "your_scala_version"]` to `:dependencies` of your `project.clj`.
 
 To automically run zinc compiler in regular lifecycle of leiningen, add `["zinc"]` to `:prep-tasks`. 
 
