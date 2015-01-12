@@ -13,15 +13,26 @@
                {:level     "debug"
                 :colorize? false}
                :inputs 
-                {:sources         ["src/scala" "src/java"]
+                {:sources         ["src/scala" "src/java"] 
                  :test-sources    ["test/scala" "test/java"]
-                 :classes         ["target/classes"]
-                 :test-classes    ["target/test-classes"]
+                 :classes         "target/classes"
+                 :test-classes    "target/test-classes"
                  :scalac-options  []
                  :javac-options   []
-                 :analysis-cache  ["target/analysis/compile"]
+                 :analysis-cache  "target/analysis/compile"
                  :analysis-map    {"path_of_a_source_dir_of_other_project" 
                                    "path_of_analysis-cache_of_other_project"}
-                 }}}})
+                 }
+               :incremental
+                {:transitive-step         3
+                 :recompile-all-fraction  0.5
+                 :retantions-debug        false
+                 :api-debug               false
+                 :api-diff-context-size   5
+                 :api-dump-directory      "target/api"
+                 :transactional           true
+                 :backup                  "target/backup"
+                 }
+               :sbt-version "0.13.6"}}})
 
 ;; vim: set ts=2 sw=2 cc=80 et: 

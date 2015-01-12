@@ -20,19 +20,19 @@
       "group-id/artifact-id" "1.0.0" "sources"))
 
 (expect ['org.scala-lang/scala-library "2.10.4"]
-  (#'leiningen.zinc/scala-library 
+  (#'leiningen.zinc/dependency
     {:dependencies [['org.scala-lang/scala-library "2.10.4"]
-                    ['foo/bar "1.0.0"]]}))
+                    ['foo/bar "1.0.0"]]} 'org.scala-lang/scala-library))
 
 (expect nil
-  (#'leiningen.zinc/scala-library 
+  (#'leiningen.zinc/dependency
     {:dependencies [['org.scala-lang/scala-TYPO "2.10.4"]
-                    ['foo/bar "1.0.0"]]}))
+                    ['foo/bar "1.0.0"]]} 'org.scala-lang/scala-library))
 
 (expect "2.10.4" 
-  (#'leiningen.zinc/dependency-version (#'leiningen.zinc/scala-library 
+  (#'leiningen.zinc/dependency-version (#'leiningen.zinc/dependency
     {:dependencies [['org.scala-lang/scala-library "2.10.4"]
-                    ['foo/bar "1.0.0"]]})))
+                    ['foo/bar "1.0.0"]]} 'org.scala-lang/scala-library)))
 
 (expect ["org/apache/commons" "commons-io"]
   (#'leiningen.zinc/lein-dep-to-maven-dep "org.apache.commons/commons-io"))

@@ -7,16 +7,7 @@
   :dependencies [[com.typesafe.zinc/zinc "0.3.5.3"]
                  [leiningen "2.5.0"]
                  [org.clojure/core.typed "0.2.77"]
-                 [com.martiansoftware/nailgun-server "0.9.1"]
-                ;; TODO remove the following deps once the plugin 
-                ;; downloads the jars
-                ;; used by sbt.
-                 [org.scala-lang/scala-compiler "2.11.4"]
-                 [org.scala-lang/scala-reflect "2.11.4"]
-                 [org.scala-lang/scala-library "2.11.4"]
-                 [com.typesafe.sbt/sbt-interface "0.13.6"]
-                 [com.typesafe.sbt/compiler-interface "0.13.6" 
-                  :classifier "sources"]]
+                 [com.martiansoftware/nailgun-server "0.9.1"]]
   :plugins [[lein-expectations "0.0.8"]
             [lein-ancient "0.5.5"]]
   :aliases  {"test"  ["expectations"]}
