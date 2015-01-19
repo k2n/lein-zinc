@@ -14,8 +14,9 @@
 (defonce default-sources ["src/scala" "src/java"])
 (defonce default-test-sources ["test/scala" "test/java"])
 
+
 (defn zinc-setup "Instantiates zinc setup object." [project] 
-  (let [{:keys [sbt-version scala-version]} project]
+  (let [{:keys [sbt-version scala-version fork-java?]} project]
   (Setup/create 
     (core/to-file (lein/maven-local-repo-path 
               "org.scala-lang/scala-compiler" scala-version))
@@ -29,7 +30,7 @@
     (core/to-file (lein/maven-local-repo-path 
               "com.typesafe.sbt/compiler-interface" sbt-version "sources"))
     (core/to-file (System/getProperty "java.home"))
-    true)))
+    fork-java?)))
 
 (defn- option "Returns scala.Some(arg) if arg is not nil else scala.None." 
   [arg]
@@ -153,16 +154,18 @@
 (defn zinc-profile [project] 
   "Generates lein project profile that contains the configurations necessary 
   to run lein zinc plugin."
-  (let [{:keys [sbt-version scala-version] 
+  (let [{:keys [sbt-version scala-version fork-java?] 
          :or {sbt-version "0.13.6"
               scala-version (lein/dependency-version 
-                          (lein/dependency project 
+                              (lein/dependency project 
                                            'org.scala-lang/scala-library))
-              }} project
+              fork-java? false
+              }} project 
         lein-zinc-version (lein/dependency-version 
                             (lein/plugin project 'lein-zinc/lein-zinc))]
   (main/info "scala version: " scala-version)
   (main/info "sbt   version: " sbt-version)
+  (main/info "fork java?     " fork-java?)
   {:dependencies [['lein-zinc lein-zinc-version]
                   ['org.scala-lang/scala-compiler scala-version]
                   ['org.scala-lang/scala-library scala-version]
@@ -171,7 +174,8 @@
                   ['com.typesafe.sbt/compiler-interface sbt-version 
                                                 :classifier "sources"]]
    :sbt-version sbt-version
-   :scala-version scala-version}))
+   :scala-version scala-version
+   :fork-java? fork-java?}))
 
 (defn zinc 
   "Compiles Scala and Java code with Typesafe zinc incremental compiler."

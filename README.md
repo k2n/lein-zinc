@@ -143,6 +143,11 @@ Incremental compiler options:
 Continuous compiling options:
   :continuous-compile
     :interval-in-ms              Interval to check the changes in source dir
+
+General compiler options;
+  :scala-version                 Override scala-library version in project.clj
+  :sbt-version                   Default is 0.13.6.
+  :fork-java?                    Java compiler runs in a separate process
 ```
 
 ## License
