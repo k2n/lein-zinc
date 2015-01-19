@@ -26,13 +26,21 @@ It triggers compilation of scala source and then scala test source.
 
 ## Sub tasks
 
-Compile scala main source code only. 
+Compile scala and java main source code only. 
 
     $ lein zinc zinc-compile 
 
-Compile scala test source code only. 
+Compile scala and java test source code only. 
 
     $ lein zinc zinc-test-compile 
+
+Monitor the changes made in main source and compile continuously. Ctrl-C to stop the task. You may want to run 'test-cc' task in a separate terminal as it doesn't compile test source.
+
+    $ lein zinc cc
+
+Monitor the changes made in test source and compile continuously. Ctrl-C to stop the task. You may want to run 'cc' task in a separate terminal as it doesn't compile main source.
+
+    $ lein zinc test-cc
 
 
 ## Customizing the behavior
@@ -69,8 +77,8 @@ Compile scala test source code only.
                  :test-sources          ["test/scala" "test/java"]
                  :classes               "target/classes"
                  :test-classes          "target/test-classes"
-                 :scalac-options        []
-                 :javac-options         []
+                 :scalac-options        ["-unchecked"]
+                 :javac-options         ["-deprecation" "-g"]
                  :analysis-cache        "target/analysis/compile"
                  :test-analysis-cache   "target/analysis/test-compile"
                  :analysis-map          {"src_dir_of_other_project" 
@@ -85,7 +93,9 @@ Compile scala test source code only.
                  :api-dump-directory      "target/api"
                  :transactional?          true
                  :backup                  "target/backup"
-                 }}}
+                 }
+               :continuous-compile 
+               {:interval-in-ms          2000}}}
 
             ;; It is possible to override scala and sbt version.
              :custom-scala-version
@@ -129,6 +139,10 @@ Incremental compiler options:
     :backup "dir"                Backup location (if transactional)
     :name-hashing?               Enable improved (experimental) incremental 
                                  compilation algorithm
+
+Continuous compiling options:
+  :continuous-compile
+    :interval-in-ms              Interval to check the changes in source dir
 ```
 
 ## License

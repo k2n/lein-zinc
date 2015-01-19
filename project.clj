@@ -7,6 +7,7 @@
   :dependencies [[com.typesafe.zinc/zinc "0.3.5.3"]
                  [leiningen "2.5.0"]
                  [org.clojure/core.typed "0.2.77"]
+                 [org.clojure/tools.namespace  "0.2.8"]
                  [com.martiansoftware/nailgun-server "0.9.1"]]
   :plugins [[lein-expectations "0.0.8"]
             [lein-ancient "0.5.5"]]

@@ -17,8 +17,8 @@
                  :test-sources         ["test/scala" "test/java"]
                  :classes              "target/classes"
                  :test-classes         "target/test-classes"
-                 :scalac-options       []
-                 :javac-options        []
+                 :scalac-options       ["-unchecked"]
+                 :javac-options        ["-deprecation" "-g"]
                  :compile-order        "Mixed"
                  :analysis-cache       "target/analysis/compile"
                  :test-analysis-cache  "target/analysis/test-compile"
@@ -34,7 +34,9 @@
                  :api-dump-directory      "target/api"
                  :transactional?          true
                  :backup                  "target/backup"
-                 }}}
+                 }
+               :continuous-compile 
+               {:interval-in-ms          2000}}}
 
              :custom-scala-version
               {:scala-version "2.10.4"
