@@ -39,7 +39,7 @@
     (re-pattern delimiter))))
 
 (defn ends-with-suffix? "Checks if the file name ends with the given suffix." 
-  [suffixes path]
+  [suffixes ^String path]
   (not= nil (some #(.endsWith path %) suffixes)))
 
 (defn scala-or-java-file? 

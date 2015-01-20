@@ -106,13 +106,15 @@
 
 (defn zinc-compile "Compiles Java and Scala source." [project]
   (let [logger (zinc-logger project)]
-    (.compile (zincCompiler (zinc-setup project) logger) 
+    (.compile (^com.typesafe.zinc.Compiler 
+                zincCompiler (zinc-setup project) logger) 
               (zincInputs project 
               (inc-options project) false) logger)))
 
 (defn zinc-test-compile "Compiles Java and Scala test source." [project]
   (let [logger (zinc-logger project)]
-    (.compile (zincCompiler (zinc-setup project) logger) 
+    (.compile (^com.typesafe.zinc.Compiler 
+                zincCompiler (zinc-setup project) logger) 
               (zincInputs project 
               (inc-options project) true) logger)))
 
