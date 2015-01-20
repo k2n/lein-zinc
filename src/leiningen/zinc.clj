@@ -1,126 +1,37 @@
 (ns leiningen.zinc
   (:require [leiningen.classpath :as classpath]
             [leiningen.core.main :as main]
-            [leiningen.core.eval :as eval]
             [leiningen.core.project :as project]
+            [leiningen.deps :as deps]
             [leiningen.help :as help]
-            [clojure.string :as string]
-            [clojure.java.io :as io])
+            [clojure.tools.namespace.track :as track]
+            [zinc.core :as core]
+            [zinc.lein :as lein])
   (:import  (com.typesafe.zinc Inputs Nailgun Setup Util)
-            (java.io File)
             (sbt Level)
             (sbt.inc IncOptions)
             (scala Option)))
 
-(defn- map-kv "Applies the function to both key and value of the given map." 
-  [f m]
-  (into {} (map (fn [entry]
-                  {(f (key entry))  (f (val entry))})
-                m)))
+(defonce default-sources ["src/scala" "src/java"])
+(defonce default-test-sources ["test/scala" "test/java"])
 
-(defn- dependency "Gets a dependency from project.clj." 
-  [project dependency-id]
-  (let [{:keys [dependencies]} project
-        dep (first (filter (fn [dependency]
-                  (let [[id ver] dependency]
-                    (= id dependency-id))) dependencies))]
-    (if dep dep 
-        (main/warn (str dependency-id " is not defined in 
-                    :dependencies of project.clj." )))))
-
-(defn- plugin "Gets a plugin from project.clj." [project plugin-id]
-  (let [{:keys [plugins]} project
-        dep (first (filter (fn [plugin]
-                  (let [[id ver] plugin]
-                    (= id plugin-id))) plugins))]
-    (main/debug "plugins: " plugins)
-    (if dep dep 
-        (main/warn (str plugin-id " is not defined in 
-                    :plugins of project.clj." )))))
-
-(defn- dependency-version "Returns version from lein style dependency." 
-  [dependency]
-  (let [[_ version] dependency]
-    version))
-
-(defn- lein-dep-to-maven-dep "Converts maven style dependency notation 
-                             to lein style." 
-  [id]
-  (let [[group_id artifact_id] (string/split id #"/")]
-    [(string/replace group_id "." "/") artifact_id]))
-
-(defn- append-classifier "Appends classifier to maven style dependency." 
-  [^String classifier]
-  (if classifier
-    (str "-" classifier)
-    ""))
-
-(defn- user-home "JVM user.home" [] (System/getProperty "user.home"))
-
-(defn- user-dir "JVM user.dir" [] (System/getProperty "user.dir"))
-
-(defn- maven-local-repo-path "Construct file path of maven local repo from 
-                             maven style dependency notation." 
-  [id version & options]
-  (let [[group-id artifact-id] (lein-dep-to-maven-dep id)
-        [classifier _] options]
-  (str (user-home) "/.m2/repository/" 
-    group-id "/" artifact-id "/" version "/" artifact-id "-" version 
-    (append-classifier classifier) ".jar")))
-
-(defn- to-file "Converts path to java.io.File. Prepend 'user.dir' 
-               if the path is relative." 
-  [^String path]
-  (if path
-     (if (.startsWith path "/")
-      (io/file path)
-      (io/file (str (user-dir) "/" path)))))
-
-(defn- to-files "Converts the paths delimited by the delimiter to seq of 
-                java.io.File." 
-  [^String paths, delimiter]
-  (let [trimmedPaths (string/replace paths " " "")]
-  (map #(to-file %) (string/split trimmedPaths (re-pattern delimiter)))))
-
-(defn- to-seq "Converts string with the delimiter to seq." 
-[^String input delimiter]
-  (flatten (string/split (string/replace input " " "") 
-    (re-pattern delimiter))))
 
 (defn zinc-setup "Instantiates zinc setup object." [project] 
-  (let [{:keys [sbt-version scala-version]} project]
+  (let [{:keys [sbt-version scala-version fork-java?]} project]
   (Setup/create 
-    (to-file (maven-local-repo-path 
+    (core/to-file (lein/maven-local-repo-path 
               "org.scala-lang/scala-compiler" scala-version))
-    (to-file (maven-local-repo-path 
+    (core/to-file (lein/maven-local-repo-path 
               "org.scala-lang/scala-library" scala-version))
-    [(to-file 
-      (maven-local-repo-path 
+    [(core/to-file 
+      (lein/maven-local-repo-path 
               "org.scala-lang/scala-reflect" scala-version)) ]
-    (to-file (maven-local-repo-path 
+    (core/to-file (lein/maven-local-repo-path 
               "com.typesafe.sbt/sbt-interface" sbt-version))
-    (to-file (maven-local-repo-path 
+    (core/to-file (lein/maven-local-repo-path 
               "com.typesafe.sbt/compiler-interface" sbt-version "sources"))
-    (to-file (System/getProperty "java.home"))
-    true)))
-
-(defn- is-dir? "Checks if the given file is a directory or not." [^File file]
-  (.isDirectory file))
-
-(defn- ends-with-suffix? "Checks if the file name ends with the given suffix." 
-  [path suffixes]
-  (not= nil (some #(.endsWith path %) suffixes)))
-
-(defn- source-file-seq "doc-string" [^String source]
-  (->> (file-seq (to-file source))
-       (filter #(not (is-dir? %)))
-       (filter #(ends-with-suffix? (.getCanonicalPath %) 
-                                   [".scala" ".java"]))))
-
-(defn- sources-file-seq "Converts the elements in a seq from string path 
-                        to java.io.File." 
-  [sources]
-  (flatten (map #(source-file-seq %) sources)))
+    (core/to-file (core/java-home))
+    fork-java?)))
 
 (defn- option "Returns scala.Some(arg) if arg is not nil else scala.None." 
   [arg]
@@ -141,8 +52,8 @@
         {:keys [sources test-sources classes test-classes scalac-options 
                 javac-options analysis-cache test-analysis-cache analysis-map 
                 compile-order mirror-analysis-cache]
-         :or {sources               ["src/scala" "src/java"]
-              test-sources          ["test/scala" "test/java"]
+         :or {sources               default-sources
+              test-sources          default-test-sources
               classes               "target/classes"
               test-classes          "target/test-classes"
               scalac-options        []
@@ -153,20 +64,20 @@
               compile-order         "Mixed"
               mirror-analysis-cache false}} 
                                           (:inputs (:zinc-options project))]
-  (main/debug "classpath: " (map #(to-file %) (to-seq classpath ":")))
+  (main/debug "classpath: "(map #(core/to-file %) (core/to-seq classpath ":")))
   (main/debug "sources: " sources)
   (main/debug "test-sources: " test-sources)
   (main/debug "analysis-cache: " analysis-cache)
   (main/debug "analysis-map: " analysis-map)
-  (Inputs/create (map #(to-file %) (to-seq classpath ":")) 
-                 (if test? (sources-file-seq test-sources) 
-                           (sources-file-seq sources)) 
-                 (if test? (to-file test-classes) (to-file classes)) 
-                 (to-seq scalac-options ",")
-                 (to-seq javac-options ",") 
-                 (if test? (to-file test-analysis-cache) 
-                           (to-file analysis-cache)) 
-                 (map-kv to-file analysis-map) 
+  (Inputs/create (map #(core/to-file %) (core/to-seq classpath ":")) 
+                 (if test? (core/sources-file-seq test-sources) 
+                           (core/sources-file-seq sources)) 
+                 (if test? (core/to-file test-classes) (core/to-file classes)) 
+                 scalac-options
+                 javac-options
+                 (if test? (core/to-file test-analysis-cache) 
+                           (core/to-file analysis-cache)) 
+                 (core/map-kv core/to-file analysis-map) 
                  compile-order inc-options 
                  mirror-analysis-cache)))
 
@@ -189,8 +100,8 @@
                 (:incremental (:zinc-options project))]
       (new com.typesafe.zinc.IncOptions transitive-step
         recompile-all-fraction relations-debug? api-debug?
-        api-diff-context-size (option (to-file api-dump-directory)) 
-        transactional? (option (to-file backup)) recompile-on-macro-def 
+        api-diff-context-size (option (core/to-file api-dump-directory)) 
+        transactional? (option (core/to-file backup)) recompile-on-macro-def 
         name-hashing?))) 
 
 (defn zinc-compile "Compiles Java and Scala source." [project]
@@ -205,16 +116,57 @@
               (zincInputs project 
               (inc-options project) true) logger)))
 
+(defn- continuous-compile [project sources f]
+  (let [{:keys [interval-in-ms] 
+         :or {interval-in-ms 2000}} (:continuous-compile 
+                                      (:zinc-options project))]
+    (loop [tracker (track/tracker)]
+      (let [new-tracker (core/scan tracker sources)]
+        (main/debug "new-tracker: " new-tracker)
+        (try
+          (when (not= new-tracker tracker)
+            (f project)
+            (main/info "compile completed."))
+          (Thread/sleep interval-in-ms)
+          (catch Exception ex (.printStackTrace ex)))
+        (recur new-tracker)))))
+
+(defn cc 
+  "Compiles Java and Scala main sources continuously.
+   This doesn't compile test source code so you may want run 
+   'lein zinc test-cc' task in a separate terminal." 
+  [project]
+  (let [{:keys [sources] 
+         :or {sources default-sources}} (:inputs (:zinc-options project))]
+    (main/info "sources:" sources)
+    (continuous-compile project sources zinc-compile)))
+
+(defn test-cc 
+  "Compiles Java and Scala test sources continuously.
+  This doesn't compile main source code so you may want run 
+  'lein zinc cc' task in a separate terminal." 
+  [project]
+  (let [{:keys [test-sources] 
+         :or {test-sources default-test-sources}} 
+            (:inputs (:zinc-options project))]
+    (main/info "test-sources:" test-sources)
+    (continuous-compile project test-sources zinc-test-compile)))
+
 (defn zinc-profile [project] 
-  (let [{:keys [sbt-version scala-version] 
+  "Generates lein project profile that contains the configurations necessary 
+  to run lein zinc plugin."
+  (let [{:keys [sbt-version scala-version fork-java?] 
          :or {sbt-version "0.13.6"
-              scala-version (dependency-version 
-                          (dependency project 'org.scala-lang/scala-library))
-              }} project
-        lein-zinc-version (dependency-version 
-                            (plugin project 'lein-zinc/lein-zinc))]
+              scala-version (lein/dependency-version 
+                              (lein/dependency project 
+                                           'org.scala-lang/scala-library))
+              fork-java? false
+              }} project 
+        lein-zinc-version (lein/dependency-version 
+                            (lein/plugin project 'lein-zinc/lein-zinc))]
   (main/info "scala version: " scala-version)
-  (main/info "sbt version: " sbt-version)
+  (main/info "sbt   version: " sbt-version)
+  (main/info "fork java?     " fork-java?)
   {:dependencies [['lein-zinc lein-zinc-version]
                   ['org.scala-lang/scala-compiler scala-version]
                   ['org.scala-lang/scala-library scala-version]
@@ -223,22 +175,25 @@
                   ['com.typesafe.sbt/compiler-interface sbt-version 
                                                 :classifier "sources"]]
    :sbt-version sbt-version
-   :scala-version scala-version}))
+   :scala-version scala-version
+   :fork-java? fork-java?}))
 
 (defn zinc 
   "Compiles Scala and Java code with Typesafe zinc incremental compiler."
-  {:subtasks [#'zinc-compile #'zinc-test-compile]}
+  {:subtasks [#'zinc-compile #'zinc-test-compile #'cc #'test-cc]}
     ([project] 
-      (let [profile (or (:zinc (:profiles project)) 
-                                          (zinc-profile project))
+      (let [profile (or (:zinc (:profiles project)) (zinc-profile project))
             project (project/merge-profiles project [profile])]
-        (zinc-compile project)(zinc-test-compile project)))
+        (deps/deps project)(zinc-compile project)(zinc-test-compile project)))
     ([project subtask & options]
       (let [profile (or (:zinc (:profiles project)) (zinc-profile project))
             project (project/merge-profiles project [profile])]
+        (deps/deps project)
         (case subtask
           "zinc-compile" (zinc-compile project)
           "zinc-test-compile" (zinc-test-compile project)
+          "cc" (cc project)
+          "test-cc" (test-cc project)
           (help/help project "zinc")))))
 
 ;; vim: set ts=2 sw=2 cc=80 et: 
