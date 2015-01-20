@@ -4,7 +4,7 @@
 # somewhere on your $PATH, like ~/bin. The rest of Leiningen will be
 # installed upon first run into the ~/.lein/self-installs directory.
 
-export LEIN_VERSION="2.5.0"
+export LEIN_VERSION="2.5.1"
 
 case $LEIN_VERSION in
     *SNAPSHOT) SNAPSHOT="YES" ;;
@@ -65,7 +65,7 @@ function self_install {
   fi
   echo "Downloading Leiningen to $LEIN_JAR now..."
   mkdir -p "$(dirname "$LEIN_JAR")"
-  LEIN_URL="https://github.com/technomancy/leiningen/releases/download/$LEIN_VERSION/leiningen-$LEIN_VERSION-standalone.jar"
+  LEIN_URL="https://github.com/technomancy/leiningen/releases/download/$LEIN_VERSION/leiningen-$LEIN_VERSION-standalone.zip"
   $HTTP_CLIENT "$LEIN_JAR.pending" "$LEIN_URL"
   local exit_code=$?
   if [ $exit_code == 0 ]; then
@@ -113,6 +113,9 @@ LEIN_JAR="$LEIN_HOME/self-installs/leiningen-$LEIN_VERSION-standalone.jar"
 # normalize $0 on certain BSDs
 if [ "$(dirname "$0")" = "." ]; then
     SCRIPT="$(which $(basename "$0"))"
+    if [ -z "$SCRIPT" ]; then
+        SCRIPT="$0"
+    fi
 else
     SCRIPT="$0"
 fi
