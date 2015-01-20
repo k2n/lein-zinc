@@ -2,6 +2,7 @@
   (:require [leiningen.classpath :as classpath]
             [leiningen.core.main :as main]
             [leiningen.core.project :as project]
+            [leiningen.deps :as deps]
             [leiningen.help :as help]
             [clojure.tools.namespace.track :as track]
             [zinc.core :as core]
@@ -183,10 +184,11 @@
     ([project] 
       (let [profile (or (:zinc (:profiles project)) (zinc-profile project))
             project (project/merge-profiles project [profile])]
-        (zinc-compile project)(zinc-test-compile project)))
+        (deps/deps project)(zinc-compile project)(zinc-test-compile project)))
     ([project subtask & options]
       (let [profile (or (:zinc (:profiles project)) (zinc-profile project))
             project (project/merge-profiles project [profile])]
+        (deps/deps project)
         (case subtask
           "zinc-compile" (zinc-compile project)
           "zinc-test-compile" (zinc-test-compile project)
