@@ -30,7 +30,7 @@
               "com.typesafe.sbt/sbt-interface" sbt-version))
     (core/to-file (lein/maven-local-repo-path 
               "com.typesafe.sbt/compiler-interface" sbt-version "sources"))
-    (core/to-file (System/getProperty "java.home"))
+    (core/to-file (core/java-home))
     fork-java?)))
 
 (defn- option "Returns scala.Some(arg) if arg is not nil else scala.None." 

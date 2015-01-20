@@ -16,6 +16,12 @@
 
 (defn user-dir "JVM user.dir" [] (System/getProperty "user.dir"))
 
+(defn java-home 
+  "JVM java.home. Returns one level above if the path ends with 'jre'." 
+  []
+  (let [home (System/getProperty "java.home")]
+    (if (.endsWith home "/jre") (string/replace home "/jre" "") home)))
+
 (defn to-file 
   "Converts path to java.io.File. Prepend 'user.dir' if the path is relative." 
   [^String path]
