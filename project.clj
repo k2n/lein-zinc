@@ -11,10 +11,11 @@
   :plugins [[lein-expectations "0.0.8"]
             [lein-ancient "0.5.5"]]
   :aliases  {"test"  ["expectations"]}
-  :repositories [["clojars" {:url "https://clojars.org/repo"
-                             :username [:gpg :env/clojars_username]
-                             :password [:gpg :env/clojars_password]}]]
-  :deploy-repositories  [["releases" :clojars]]
+  :repositories [["k2n-clojars" {:url "https://clojars.org/repo"
+                             :username [:env/clojars_username :gpg]
+                             :password [:env/clojars_password :gpg]}]]
+  :deploy-repositories  [["releases" :k2n-clojars]
+                         ["snapshots" :k2n-clojars]]
   :profiles {:dev {:global-vars {*warn-on-reflection* true}
                    :dependencies [[expectations "2.0.13"]]}})
 
