@@ -6,15 +6,13 @@ A Leiningen plugin to compile scala and java source code with [Typesafe zinc](ht
 [![Dependencies Status](http://jarkeeper.com/k2n/lein-zinc/status.svg)](http://jarkeeper.com/k2n/lein-zinc)
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/k2n/lein-zinc?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-## The latest version
 
 [![Clojars Project](http://clojars.org/k2n/lein-zinc/latest-version.svg)](http://clojars.org/k2n/lein-zinc)
 
 ## Usage
 
 * Put scala source code under `src/scala`, and test code under `test/scala`. The directories can be overridden. See 'Avaiable Options' below. 
-* Put `[lein-zinc "0.1.0-SNAPSHOT"]` into the `:plugins` vector of your
-`project.clj`.
+* Put the latest version shown above into the `:plugins` vector of your `project.clj`.
 * Add `[org.scala-lang/scala-library "your_scala_version"]` to `:dependencies` of your `project.clj`.
 * To automically run zinc compiler in regular lifecycle of leiningen, add `["zinc" "compile"]` to `:prep-tasks`. 
 * Alternatively, run the task directly from the command line.  
@@ -64,7 +62,7 @@ Monitor the changes made in test source and compile continuously. Ctrl-C to stop
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
             ;; specify lein-zinc plugin.
-  :plugins [[lein-zinc "0.1.0-SNAPSHOT"]]
+  :plugins [[k2n/lein-zinc "1.0.0-SNAPSHOT"]]
   :dependencies [[org.clojure/clojure "1.6.0"]
                  ;; scala-library is required and the version specified here 
                  ;; is used to compile if it is not overridden with 'scala-version'
