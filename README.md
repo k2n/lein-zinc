@@ -7,7 +7,7 @@ A Leiningen plugin to compile scala and java source code with [Typesafe zinc](ht
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/k2n/lein-zinc?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 
-[![Clojars Project](http://clojars.org/k2n/lein-zinc/latest-version.svg)](http://clojars.org/k2n/lein-zinc)
+[![Clojars Project](http://clojars.org/lein-zinc/latest-version.svg)](http://clojars.org/lein-zinc)
 
 ## Usage
 
@@ -62,7 +62,7 @@ Monitor the changes made in test source and compile continuously. Ctrl-C to stop
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
             ;; specify lein-zinc plugin.
-  :plugins [[k2n/lein-zinc "1.0.0-SNAPSHOT"]]
+  :plugins [[lein-zinc "0.1.0-SNAPSHOT"]]
   :dependencies [[org.clojure/clojure "1.6.0"]
                  ;; scala-library is required and the version specified here 
                  ;; is used to compile if it is not overridden with 'scala-version'

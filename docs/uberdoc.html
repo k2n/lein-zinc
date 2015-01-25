@@ -2865,155 +2865,308 @@ net.brehaut.ClojureTools = (function (SH) {
     build_tree: build_tree
   };
 })(SyntaxHighlighter);
-</script><title>lein-zinc -- Marginalia</title></head><body><table><tr><td class="docs"><div class="header"><h1 class="project-name"><a href="https://github.com/k2n/lein-zinc">lein-zinc</a></h1><h2 class="project-version">0.1.0-SNAPSHOT</h2><br /><p>Typesafe zinc scala incremental compiler plugin</p>
-</div><div class="dependencies"><h3>dependencies</h3><table><tr><td class="dep-name">com.typesafe.zinc/zinc</td><td class="dotted"><hr /></td><td class="dep-version">0.3.5</td></tr><tr><td class="dep-name">leiningen</td><td class="dotted"><hr /></td><td class="dep-version">2.5.0</td></tr><tr><td class="dep-name">org.scala-lang/scala-compiler</td><td class="dotted"><hr /></td><td class="dep-version">2.10.4</td></tr><tr><td class="dep-name">org.scala-lang/scala-reflect</td><td class="dotted"><hr /></td><td class="dep-version">2.10.4</td></tr><tr><td class="dep-name">org.scala-lang/scala-library</td><td class="dotted"><hr /></td><td class="dep-version">2.10.4</td></tr><tr><td class="dep-name">com.typesafe.sbt/sbt-interface</td><td class="dotted"><hr /></td><td class="dep-version">0.13.6</td></tr><tr><td class="dep-name">com.typesafe.sbt/compiler-interface</td><td class="dotted"><hr /></td><td class="dep-version">0.13.6</td></tr></table></div></td><td class="codes" style="text-align: center; vertical-align: middle;color: #666;padding-right:20px"><br /><br /><br />(this space intentionally left almost blank)</td></tr><tr><td class="docs"><div class="toc"><a name="toc"><h3>namespaces</h3></a><ul><li><a href="#leiningen.zinc">leiningen.zinc</a></li></ul></div></td><td class="codes">&nbsp;</td></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#leiningen.zinc" name="leiningen.zinc"><h1 class="project-name">leiningen.zinc</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+</script><title>k2n/lein-zinc -- Marginalia</title></head><body><table><tr><td class="docs"><div class="header"><h1 class="project-name"><a href="https://github.com/k2n/lein-zinc">k2n/lein-zinc</a></h1><h2 class="project-version">1.0.0-SNAPSHOT</h2><br /><p>Typesafe zinc scala incremental compiler plugin</p>
+</div><div class="dependencies"><h3>dependencies</h3><table><tr><td class="dep-name">com.typesafe.zinc/zinc</td><td class="dotted"><hr /></td><td class="dep-version">0.3.5.3</td></tr><tr><td class="dep-name">leiningen</td><td class="dotted"><hr /></td><td class="dep-version">2.5.1</td></tr><tr><td class="dep-name">org.clojure/core.typed</td><td class="dotted"><hr /></td><td class="dep-version">0.2.77</td></tr><tr><td class="dep-name">org.clojure/tools.namespace</td><td class="dotted"><hr /></td><td class="dep-version">0.2.8</td></tr></table></div></td><td class="codes" style="text-align: center; vertical-align: middle;color: #666;padding-right:20px"><br /><br /><br />(this space intentionally left almost blank)</td></tr><tr><td class="docs"><div class="toc"><a name="toc"><h3>namespaces</h3></a><ul><li><a href="#leiningen.zinc">leiningen.zinc</a></li><li><a href="#zinc.core">zinc.core</a></li><li><a href="#zinc.lein">zinc.lein</a></li></ul></div></td><td class="codes">&nbsp;</td></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#leiningen.zinc" name="leiningen.zinc"><h1 class="project-name">leiningen.zinc</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(ns leiningen.zinc
   (:require [leiningen.classpath :as classpath]
             [leiningen.core.main :as main]
-            [leiningen.core.eval :as eval]
             [leiningen.core.project :as project]
-            [clojure.string :as string])
-  (:import  (com.typesafe.zinc Inputs Setup Util)
+            [leiningen.deps :as deps]
+            [leiningen.help :as help]
+            [clojure.tools.namespace.track :as track]
+            [zinc.core :as core]
+            [zinc.lein :as lein])
+  (:import  (com.typesafe.zinc Inputs Nailgun Setup Util)
             (sbt Level)
-            (sbt.inc IncOptions)))</pre></td></tr><tr><td class="docs"><p>doc-string</p>
-
-<p>TODO :scala-source-path needs to be unified with the one 
-passed into sbt.
-TODO :scalac-options</p>
-</td><td class="codes"><pre class="brush: clojure">(comment (defn task-props  [project]
-  (merge {:srcdir (:scala-source-path project)
-          :destdir (:compile-path project)}
-          (:scalac-options project))))</pre></td></tr><tr><td class="docs"><p>obtain scala-library dependency from project.clj</p>
-</td><td class="codes"><pre class="brush: clojure">(defn- scala-library  
-  [project]
-  (let [{:keys [dependencies]} project
-        dep (first (filter (fn [dependency]
-                  (let [[id ver] dependency]
-                    (= id 'org.scala-lang/scala-library))) dependencies))]
-    (if dep dep 
-        (main/warn &quot;scala-library is not defined in 
-                    :dependencies of project.clj.&quot; ))))</pre></td></tr><tr><td class="docs"><p>return version from lein style dependency</p>
-</td><td class="codes"><pre class="brush: clojure">(defn- dependency-version  
-  [dependency]
-  (let [[_ version] dependency]
-    version))</pre></td></tr><tr><td class="docs"><p>convert maven style dependency notation 
-                             to lein style</p>
-</td><td class="codes"><pre class="brush: clojure">(defn- lein-dep-to-maven-dep  
-  [id]
-  (let [[group_id artifact_id] (string/split id #&quot;/&quot;)]
-    [(string/replace group_id &quot;.&quot; &quot;/&quot;) artifact_id]))</pre></td></tr><tr><td class="docs"><p>append classifier to maven style dependency</p>
-</td><td class="codes"><pre class="brush: clojure">(defn- append-classifier  
-  [^String classifier]
-  (if classifier
-    (str &quot;-&quot; classifier)
-    &quot;&quot;))</pre></td></tr><tr><td class="docs"><p>JVM user.home</p>
-</td><td class="codes"><pre class="brush: clojure">(defn- user-home  [] (System/getProperty &quot;user.home&quot;))</pre></td></tr><tr><td class="docs"><p>JVM user.dir</p>
-</td><td class="codes"><pre class="brush: clojure">(defn- user-dir  [] (System/getProperty &quot;user.dir&quot;))</pre></td></tr><tr><td class="docs"><p>construct file path of maven local repo from 
-                             maven style dependency notation</p>
-</td><td class="codes"><pre class="brush: clojure">(defn- maven-local-repo-path  
-  [id version &amp; options]
-  (let [[group-id artifact-id] (lein-dep-to-maven-dep id)
-        [classifier _] options]
-  (str (user-home) &quot;/.m2/repository/&quot; 
-    group-id &quot;/&quot; artifact-id &quot;/&quot; version &quot;/&quot; artifact-id &quot;-&quot; version 
-    (append-classifier classifier) &quot;.jar&quot;)))</pre></td></tr><tr><td class="docs"><p>convert path to java.io.File. Prepend 'user.dir' 
-               if the path is relative</p>
-</td><td class="codes"><pre class="brush: clojure">(defn- to-file  
-  [^String path]
-  (if path
-    (if (.startsWith path &quot;/&quot;)
-      (new java.io.File path)
-      (new java.io.File (str (user-dir) &quot;/&quot; path)))))</pre></td></tr><tr><td class="docs"><p>convert the paths delimited by the delimiter to seq of 
-                java.io.File</p>
-</td><td class="codes"><pre class="brush: clojure">(defn- to-files  
-  [^String paths, delimiter]
-  (let [trimmedPaths (string/replace paths &quot; &quot; &quot;&quot;)]
-  (map #(to-file %) (string/split trimmedPaths (re-pattern delimiter)))))</pre></td></tr><tr><td class="docs"><p>convert string with the delimiter to seq</p>
-</td><td class="codes"><pre class="brush: clojure">(defn- to-seq  
-[^String input delimiter]
-  (flatten (string/split (string/replace input &quot; &quot; &quot;&quot;) 
-    (re-pattern delimiter))))</pre></td></tr><tr><td class="docs"><p>instantiate zinc setup object</p>
-
-<p>TODO: download the jars and source jars for the version inferred from 
-scala-library in the target project dependencies up front so that the
-code can assure the jars are in maven local repo.</p>
-</td><td class="codes"><pre class="brush: clojure">(defn zinc-setup  [] 
+            (sbt.inc IncOptions)
+            (scala Option)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def default-sources [&quot;src/scala&quot; &quot;src/java&quot;])
+(def default-test-sources [&quot;test/scala&quot; &quot;test/java&quot;])</pre></td></tr><tr><td class="docs"><p>Instantiates zinc setup object.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn zinc-setup  [project] 
+  (let [{:keys [sbt-version scala-version fork-java?]} project]
   (Setup/create 
-    (to-file (maven-local-repo-path &quot;org.scala-lang/scala-compiler&quot; &quot;2.10.4&quot;))
-    (to-file (maven-local-repo-path &quot;org.scala-lang/scala-library&quot; &quot;2.10.4&quot;))
-    [(to-file 
-      (maven-local-repo-path &quot;org.scala-lang/scala-reflect&quot; &quot;2.10.4&quot;)) ]
-    (to-file (maven-local-repo-path &quot;com.typesafe.sbt/sbt-interface&quot; &quot;0.13.6&quot;))
-    (to-file (maven-local-repo-path 
-              &quot;com.typesafe.sbt/compiler-interface&quot; &quot;0.13.6&quot; &quot;sources&quot;))
-    (to-file (System/getProperty &quot;java.home&quot;))
-    true))</pre></td></tr><tr><td class="docs"><p>TODO create multiple levels of config under zinc-options</p>
-</td><td class="codes"><pre class="brush: clojure">(defn- zinc-options-in  [project]
-  (:zinc-options project))</pre></td></tr><tr><td class="docs"><p>instantiate zinc logger</p>
+    (core/to-file (lein/maven-local-repo-path 
+              &quot;org.scala-lang/scala-compiler&quot; scala-version))
+    (core/to-file (lein/maven-local-repo-path 
+              &quot;org.scala-lang/scala-library&quot; scala-version))
+    [(core/to-file 
+      (lein/maven-local-repo-path 
+              &quot;org.scala-lang/scala-reflect&quot; scala-version)) ]
+    (core/to-file (lein/maven-local-repo-path 
+              &quot;com.typesafe.sbt/sbt-interface&quot; sbt-version))
+    (core/to-file (lein/maven-local-repo-path 
+              &quot;com.typesafe.sbt/compiler-interface&quot; sbt-version &quot;sources&quot;))
+    (core/to-file (core/java-home))
+    fork-java?)))</pre></td></tr><tr><td class="docs"><p>Returns scala.Some(arg) if arg is not nil else scala.None.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn- option  
+  [arg]
+  (if (nil? arg) (scala.Option/apply nil) (new scala.Some arg)))</pre></td></tr><tr><td class="docs"><p>Instantiate zinc logger.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn zinc-logger  [project]
   (let [{:keys [level colorize?]
          :or {level &quot;info&quot;
               colorize? false}} (:logging (:zinc-options project))]
-    (Util/logger false (Level/withName level) colorize?)))</pre></td></tr><tr><td class="docs"><p>instantiate zinc compiler</p>
+    (Util/logger false (Level/withName level) colorize?)))</pre></td></tr><tr><td class="docs"><p>Instantiates zinc compiler.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn zincCompiler  
   [zinc-setup zinc-logger]
-  (com.typesafe.zinc.Compiler/getOrCreate zinc-setup zinc-logger))</pre></td></tr><tr><td class="docs"><p>instantiate zinc inputs</p>
-
-<p>TODO rename parameters to clojure style
-TODO create a function to return the seq of files under the specified 
-directories for scalaSources
-TODO convert options type to take seq in project.clj
-TODO implement the logic to inherit the analysis cache in the
-parent projects</p>
-</td><td class="codes"><pre class="brush: clojure">(defn zincInputs  [project inc-options]
+  (com.typesafe.zinc.Compiler/getOrCreate zinc-setup zinc-logger))</pre></td></tr><tr><td class="docs"><p>Instantiates zinc inputs.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn zincInputs  [project inc-options test?]
   (let [classpath (classpath/get-classpath-string project)
-        {:keys [scalaSources classesDirectory scalacOptions javacOptions 
-                analysisCache analysisMap compileOrder mirrorAnalysisCache]
-         :or {scalaSources &quot;src/scala/Test.scala&quot;
-              classesDirectory &quot;target/classes&quot;
-              scalacOptions []
-              javacOptions []
-              analysisCache &quot;target/zinc-analysis-cache&quot;
-              analysisMap {(to-file &quot;/tmp&quot;) (to-file &quot;/tmp&quot;)}
-              compileOrder &quot;Mixed&quot;
-              mirrorAnalysisCache false}} (zinc-options-in project)]
-  (main/debug &quot;classpath: &quot; (map #(to-file %) (to-seq classpath &quot;:&quot;)))
-  (Inputs/create (map #(to-file %) (to-seq classpath &quot;:&quot;)) 
-                 (map #(to-file %) (to-seq scalaSources &quot;,&quot;)) 
-                 (to-file classesDirectory) (to-seq scalacOptions &quot;,&quot;)
-                 (to-seq javacOptions &quot;,&quot;) (to-file analysisCache) analysisMap 
-                 compileOrder inc-options mirrorAnalysisCache)))</pre></td></tr><tr><td class="docs"><p>options for sbt incremental compiler</p>
+        {:keys [sources test-sources classes test-classes scalac-options 
+                javac-options analysis-cache test-analysis-cache analysis-map 
+                compile-order mirror-analysis-cache]
+         :or {sources               default-sources
+              test-sources          default-test-sources
+              classes               &quot;target/classes&quot;
+              test-classes          &quot;target/test-classes&quot;
+              scalac-options        []
+              javac-options         []
+              analysis-cache        &quot;target/analysis/compile&quot;
+              test-analysis-cache   &quot;target/analysis/test-compile&quot;
+              analysis-map          {&quot;/tmp&quot; &quot;/tmp&quot;}
+              compile-order         &quot;Mixed&quot;
+              mirror-analysis-cache false}} 
+                                          (:inputs (:zinc-options project))]
+    (main/debug &quot;classpath: &quot;(map #(core/to-file %) 
+                              (core/to-seq classpath &quot;:&quot;)))
+    (main/debug &quot;sources: &quot; sources)
+    (main/debug &quot;test-sources: &quot; test-sources)
+    (main/debug &quot;analysis-cache: &quot; analysis-cache)
+    (main/debug &quot;analysis-map: &quot; analysis-map)
+    (try (Inputs/create (map #(core/to-file %) (core/to-seq classpath &quot;:&quot;)) 
+                   (if test? (core/sources-file-seq test-sources) 
+                             (core/sources-file-seq sources)) 
+                   (if test? (core/to-file test-classes) (core/to-file classes)) 
+                   scalac-options
+                   javac-options
+                   (if test? (core/to-file test-analysis-cache) 
+                             (core/to-file analysis-cache)) 
+                   (core/map-kv core/to-file analysis-map) 
+                   compile-order inc-options 
+                   mirror-analysis-cache)
+          (catch Exception e 
+            (main/abort &quot;Invalid parameter. &quot; (.getMessage e))))))</pre></td></tr><tr><td class="docs"><p>Generates options for sbt incremental compiler.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn inc-options  [project]
   (let [defaultIncOptions (sbt.inc.IncOptions/Default) 
-        {:keys [transitiveStep recompileAllFraction relationsDebug
-                apiDebug apiDiffContextSize apiDumpDirectory transactional
-                backup recompileOnMacroDef nameHashing]
-         :or { transitiveStep (.transitiveStep defaultIncOptions)
-               recompileAllFraction (.recompileAllFraction defaultIncOptions)
-               relationsDebug (.relationsDebug defaultIncOptions)
-               apiDebug (.apiDebug defaultIncOptions)
-               apiDiffContextSize (.apiDiffContextSize defaultIncOptions)
-               apiDumpDirectory (.apiDumpDirectory defaultIncOptions)
-               transactional false
-               backup nil
-               recompileOnMacroDef (.recompileOnMacroDef defaultIncOptions)
-               nameHashing (.nameHashing defaultIncOptions)
-             }} (zinc-options-in project)]
-      (new com.typesafe.zinc.IncOptions transitiveStep
-        recompileAllFraction relationsDebug apiDebug
-        apiDiffContextSize apiDumpDirectory transactional
-        backup recompileOnMacroDef nameHashing))) </pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(def zinc-profile {:dependencies [['lein-zinc &quot;0.1.0-SNAPSHOT&quot;]]})</pre></td></tr><tr><td class="docs"><p>Typesafe scala zinc incremental compiler plugin.</p>
-</td><td class="codes"><pre class="brush: clojure">(defn zinc 
+        {:keys [transitive-step recompile-all-fraction relations-debug?
+                api-debug? api-diff-context-size api-dump-directory 
+                transactional? backup recompile-on-macro-def name-hashing?]
+         :or { transitive-step (.transitiveStep defaultIncOptions)
+               recompile-all-fraction (.recompileAllFraction defaultIncOptions)
+               relations-debug? (.relationsDebug defaultIncOptions)
+               api-debug? (.apiDebug defaultIncOptions)
+               api-diff-context-size (.apiDiffContextSize defaultIncOptions)
+               api-dump-directory nil
+               transactional? false
+               backup &quot;target/backup&quot;
+               recompile-on-macro-def (.recompileOnMacroDef defaultIncOptions)
+               name-hashing? (.nameHashing defaultIncOptions)
+             }} 
+                (:incremental (:zinc-options project))]
+      (new com.typesafe.zinc.IncOptions transitive-step
+        recompile-all-fraction relations-debug? api-debug?
+        api-diff-context-size (option (core/to-file api-dump-directory)) 
+        transactional? (option (core/to-file backup)) recompile-on-macro-def 
+        name-hashing?))) </pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn- do-compile  [project test?]
+  (let [logger (zinc-logger project)]
+    (.compile (^com.typesafe.zinc.Compiler 
+                zincCompiler (zinc-setup project) logger) 
+              (zincInputs project 
+              (inc-options project) test?) logger)))</pre></td></tr><tr><td class="docs"><p>Compiles Java and Scala source.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn zinc-compile  [project]
+  (do-compile project false))</pre></td></tr><tr><td class="docs"><p>Compiles Java and Scala test source.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn zinc-test-compile  [project]
+  (do-compile project true))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn- continuous-compile [project sources f]
+  (let [{:keys [interval-in-ms] 
+         :or {interval-in-ms 2000}} (:continuous-compile 
+                                      (:zinc-options project))]
+    (loop [tracker (track/tracker)]
+      (let [new-tracker (core/scan tracker sources)]
+        (main/debug &quot;new-tracker: &quot; new-tracker)
+        (try
+          (when (not= new-tracker tracker)
+            (f project)
+            (main/info &quot;compile completed.&quot;))
+          (Thread/sleep interval-in-ms)
+          (catch Exception ex (.printStackTrace ex)))
+        (recur new-tracker)))))</pre></td></tr><tr><td class="docs"><p>Compiles Java and Scala main sources continuously.
+   This doesn't compile test source code so you may want run 
+   'lein zinc test-cc' task in a separate terminal.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn cc 
   [project]
-  (let [profile (or (:zinc (:profiles project)) zinc-profile)
-        project (project/merge-profiles project [profile])
-        logger (zinc-logger project)]
-    (def post-project project)
-    (main/debug &quot;user dir: &quot; (user-dir))  
-    (.compile (zincCompiler (zinc-setup) logger) 
-          (zincInputs project (inc-options project)) logger)))</pre></td></tr><tr><td class="docs"><p>vim: set ts=2 sw=2 cc=80 et: </p>
-</td><td class="codes"></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr></table><div class="footer">Generated by <a href="https://github.com/gdeer81/marginalia">Marginalia</a>.&nbsp;&nbsp;Syntax highlighting provided by Alex Gorbatchev's <a href="http://alexgorbatchev.com/SyntaxHighlighter/">SyntaxHighlighter</a><div id="floating-toc"><ul><li class="floating-toc-li" id="floating-toc_leiningen.zinc">leiningen.zinc</li></ul></div></div><script type="text/javascript">SyntaxHighlighter.defaults['gutter'] = false;
+  (let [{:keys [sources] 
+         :or {sources default-sources}} (:inputs (:zinc-options project))]
+    (main/info &quot;sources:&quot; sources)
+    (continuous-compile project sources zinc-compile)))</pre></td></tr><tr><td class="docs"><p>Compiles Java and Scala test sources continuously.
+  This doesn't compile main source code so you may want run 
+  'lein zinc cc' task in a separate terminal.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn test-cc 
+  [project]
+  (let [{:keys [test-sources] 
+         :or {test-sources default-test-sources}} 
+            (:inputs (:zinc-options project))]
+    (main/info &quot;test-sources:&quot; test-sources)
+    (continuous-compile project test-sources zinc-test-compile)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn zinc-profile [project] 
+  &quot;Generates lein project profile that contains the configurations necessary 
+  to run lein zinc plugin.&quot;
+  (let [{:keys [sbt-version scala-version fork-java?] 
+         :or {sbt-version &quot;0.13.6&quot;
+              scala-version (lein/dependency-version 
+                              (lein/dependency project 
+                                           'org.scala-lang/scala-library))
+              fork-java? false
+              }} project 
+        lein-zinc-version (lein/dependency-version 
+                            (lein/plugin project 'k2n/lein-zinc))]
+  (main/info &quot;scala version: &quot; scala-version)
+  (main/info &quot;sbt   version: &quot; sbt-version)
+  (main/info &quot;fork java?     &quot; fork-java?)
+  {:dependencies [['lein-zinc lein-zinc-version]
+                  ['org.scala-lang/scala-compiler scala-version]
+                  ['org.scala-lang/scala-library scala-version]
+                  ['org.scala-lang/scala-reflect scala-version]
+                  ['com.typesafe.sbt/sbt-interface sbt-version]
+                  ['com.typesafe.sbt/compiler-interface sbt-version 
+                                                :classifier &quot;sources&quot;]]
+   :sbt-version sbt-version
+   :scala-version scala-version
+   :fork-java? fork-java?}))</pre></td></tr><tr><td class="docs"><p>Compiles Scala and Java code with Typesafe zinc incremental compiler.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn zinc 
+  {:subtasks [#'zinc-compile #'zinc-test-compile #'cc #'test-cc]}
+    ([project] 
+      (let [profile (or (:zinc (:profiles project)) (zinc-profile project))
+            project (project/merge-profiles project [profile])]
+        (deps/deps project)(zinc-compile project)(zinc-test-compile project)))
+    ([project subtask &amp; options]
+      (let [profile (or (:zinc (:profiles project)) (zinc-profile project))
+            project (project/merge-profiles project [profile])]
+        (deps/deps project)
+        (case subtask
+          &quot;zinc-compile&quot; (zinc-compile project)
+          &quot;zinc-test-compile&quot; (zinc-test-compile project)
+          &quot;cc&quot; (cc project)
+          &quot;test-cc&quot; (test-cc project)
+          (help/help project &quot;zinc&quot;)))))</pre></td></tr><tr><td class="docs"><p>vim: set ts=2 sw=2 cc=80 et: </p>
+</td><td class="codes"></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#zinc.core" name="zinc.core"><h1 class="project-name">zinc.core</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(ns zinc.core
+  (:require [clojure.java.io :as io]
+            [clojure.set :as set]
+            [clojure.string :as string]
+            [clojure.tools.namespace.file :as file])
+  (:import (java.io File)))</pre></td></tr><tr><td class="docs"><p>Applies the function to both key and value of the given map.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn map-kv 
+  [f m]
+  (into {} (map (fn [entry]
+                  {(f (key entry))  (f (val entry))})
+                m)))</pre></td></tr><tr><td class="docs"><p>JVM user.home</p>
+</td><td class="codes"><pre class="brush: clojure">(defn user-home  [] (System/getProperty &quot;user.home&quot;))</pre></td></tr><tr><td class="docs"><p>JVM user.dir</p>
+</td><td class="codes"><pre class="brush: clojure">(defn user-dir  [] (System/getProperty &quot;user.dir&quot;))</pre></td></tr><tr><td class="docs"><p>JVM java.home. Returns one level above if the path ends with 'jre'.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn java-home 
+  []
+  (let [home (System/getProperty &quot;java.home&quot;)]
+    (if (.endsWith home &quot;/jre&quot;) (string/replace home &quot;/jre&quot; &quot;&quot;) home)))</pre></td></tr><tr><td class="docs"><p>Converts path to java.io.File. Prepend 'user.dir' if the path is relative.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn to-file 
+  [^String path]
+  (if path
+     (if (.startsWith path &quot;/&quot;)
+      (io/file path)
+      (io/file (str (user-dir) &quot;/&quot; path)))))</pre></td></tr><tr><td class="docs"><p>Checks if the given file is a directory or not.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn is-dir?  [^File file]
+  (.isDirectory file))</pre></td></tr><tr><td class="docs"><p>Converts string with the delimiter to seq.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn to-seq  
+  [^String input delimiter]
+  (flatten (string/split (string/replace input &quot; &quot; &quot;&quot;) 
+    (re-pattern delimiter))))</pre></td></tr><tr><td class="docs"><p>Checks if the file name ends with the given suffix.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn ends-with-suffix?  
+  [suffixes ^String path]
+  (not= nil (some #(.endsWith path %) suffixes)))</pre></td></tr><tr><td class="docs"><p>Checks if the given file has '.scala' or '.java' suffix.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn scala-or-java-file? 
+  [^File file]
+  (-&gt;&gt; file
+       (.getCanonicalPath)
+       (ends-with-suffix? [&quot;.scala&quot; &quot;.java&quot;])))</pre></td></tr><tr><td class="docs"><p>Search the files underneath the given path and return Scala or Java source 
+  files.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn source-file-seq 
+  [^String source]
+  (-&gt;&gt; (file-seq (to-file source))
+       (filter #(not (is-dir? ^File %)))
+       (filter #(scala-or-java-file? ^File %))))</pre></td></tr><tr><td class="docs"><p>Converts the elements in a seq from string path to java.io.File and filters 
+  non Scala/Java source files.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn sources-file-seq 
+  [sources]
+  (flatten (map #(source-file-seq %) sources)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn- find-files [dirs]
+  (-&gt;&gt; dirs
+       (map #(to-file %))
+       (filter #(.exists ^File %))
+       (mapcat file-seq)
+       (filter scala-or-java-file?)
+       (map #(.getCanonicalFile ^File %))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn- modified-files [tracker files]
+  (filter #(&lt; (::time tracker 0) (.lastModified ^File %)) files))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn- deleted-files [tracker files]
+  (set/difference (::files tracker #{}) (set files)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn- update-files [tracker deleted modified]
+  (let [now (System/currentTimeMillis)]
+    (-&gt; tracker
+        (update-in [::files] #(if % (apply disj % deleted) #{}))
+        (file/remove-files deleted)
+        (update-in [::files] into modified)
+        (file/add-files modified)
+        (assoc ::time now))))</pre></td></tr><tr><td class="docs"><p>doc-string</p>
+</td><td class="codes"><pre class="brush: clojure">(defn scan  [tracker dirs]
+  (let [files (find-files dirs)
+        deleted (seq (deleted-files tracker files))
+        modified (seq (modified-files tracker files))]
+      (if (or deleted modified)
+        (update-files tracker deleted modified)
+        tracker)))</pre></td></tr><tr><td class="docs"><p>vim: set ts=3 sw=2 cc=80 et: </p>
+</td><td class="codes"></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#zinc.lein" name="zinc.lein"><h1 class="project-name">zinc.lein</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>Handles leiningen project access and conversions with maven.</p>
+</td><td class="codes"><pre class="brush: clojure">(ns zinc.lein
+  (:require [clojure.string :as string]
+            [leiningen.core.main :as main]
+            [zinc.core :as core]))</pre></td></tr><tr><td class="docs"><p>Gets a dependency from project.clj.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn dependency  
+  [project dependency-id]
+  (let [{:keys [dependencies]} project
+        dep (first (filter (fn [dependency]
+                  (let [[id ver] dependency]
+                    (= id dependency-id))) dependencies))]
+    (if dep dep 
+        (main/warn (str dependency-id &quot; is not defined in 
+                    :dependencies of project.clj.&quot; )))))</pre></td></tr><tr><td class="docs"><p>Gets a plugin from project.clj.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn plugin  [project plugin-id]
+  (let [{:keys [plugins]} project
+        dep (first (filter (fn [plugin]
+                  (let [[id ver] plugin]
+                    (= id plugin-id))) plugins))]
+    (main/debug &quot;plugins: &quot; plugins)
+    (if dep dep 
+        (main/warn (str plugin-id &quot; is not defined in 
+                    :plugins of project.clj.&quot; )))))</pre></td></tr><tr><td class="docs"><p>Returns version from lein style dependency.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn dependency-version  
+  [dependency]
+  (let [[_ version] dependency]
+    version))</pre></td></tr><tr><td class="docs"><p>Converts maven style dependency notation to lein style.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn- lein-dep-to-maven-dep 
+  [id]
+  (let [[group_id artifact_id] (string/split id #&quot;/&quot;)]
+    [(string/replace group_id &quot;.&quot; &quot;/&quot;) artifact_id]))</pre></td></tr><tr><td class="docs"><p>Appends classifier to maven style dependency.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn- append-classifier  
+  [^String classifier]
+  (if classifier
+    (str &quot;-&quot; classifier)
+    &quot;&quot;))</pre></td></tr><tr><td class="docs"><p>Construct file path of maven local repo from maven style dependency.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn maven-local-repo-path 
+  [id version &amp; options]
+  (let [[group-id artifact-id] (lein-dep-to-maven-dep id)
+        [classifier _] options]
+  (str (core/user-home) &quot;/.m2/repository/&quot; 
+    group-id &quot;/&quot; artifact-id &quot;/&quot; version &quot;/&quot; artifact-id &quot;-&quot; version 
+    (append-classifier classifier) &quot;.jar&quot;)))</pre></td></tr><tr><td class="docs"><p>vim: set ts=2 sw=2 cc=80 et: </p>
+</td><td class="codes"></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr></table><div class="footer">Generated by <a href="https://github.com/gdeer81/marginalia">Marginalia</a>.&nbsp;&nbsp;Syntax highlighting provided by Alex Gorbatchev's <a href="http://alexgorbatchev.com/SyntaxHighlighter/">SyntaxHighlighter</a><div id="floating-toc"><ul><li class="floating-toc-li" id="floating-toc_leiningen.zinc">leiningen.zinc</li><li class="floating-toc-li" id="floating-toc_zinc.core">zinc.core</li><li class="floating-toc-li" id="floating-toc_zinc.lein">zinc.lein</li></ul></div></div><script type="text/javascript">SyntaxHighlighter.defaults['gutter'] = false;
 SyntaxHighlighter.all();
 
 // hackity hack
