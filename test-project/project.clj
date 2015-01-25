@@ -1,9 +1,9 @@
-(defproject test-project "0.1.0-SNAPSHOT"
+(defproject test-project "1.1.0-SNAPSHOT"
   :description "test project using lein-zinc"
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :plugins [[lein-zinc "0.1.0-SNAPSHOT"]]
+  :plugins [[k2n/lein-zinc "1.0.0-SNAPSHOT"]]
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [org.scala-lang/scala-library "2.11.4"]]
   :prep-tasks ["zinc" "compile"]
