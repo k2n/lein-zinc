@@ -14,8 +14,6 @@
   :repositories [["clojars" {:url "https://clojars.org/repo"
                              :cred :gpg}]]
   :deploy-repositories  [["releases" :clojars]]
-  :lein-release  {:deploy-via :clojars
-                  :scm :git}
   :profiles {:dev {:global-vars {*warn-on-reflection* true}
                    :dependencies [[expectations "2.0.13"]]}})
 
