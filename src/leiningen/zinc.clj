@@ -108,12 +108,10 @@
 
 (defn- do-compile  [project test?]
   (let [logger (zinc-logger project)]
-    (try (.compile (^com.typesafe.zinc.Compiler 
+    (.compile (^com.typesafe.zinc.Compiler 
                 zincCompiler (zinc-setup project) logger) 
               (zincInputs project 
-              (inc-options project) test?) logger)
-         (catch Exception e 
-            (main/abort "Failed to compile. " (.getMessage e))))))
+              (inc-options project) test?) logger)))
 
 (defn zinc-compile "Compiles Java and Scala source." [project]
   (do-compile project false))
