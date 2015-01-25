@@ -166,7 +166,7 @@
               fork-java? false
               }} project 
         lein-zinc-version (lein/dependency-version 
-                            (lein/plugin project 'lein-zinc))]
+                            (lein/plugin project 'lein-zinc/lein-zinc))]
   (main/info "scala version: " scala-version)
   (main/info "sbt   version: " sbt-version)
   (main/info "fork java?     " fork-java?)
