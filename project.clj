@@ -1,4 +1,4 @@
-(defproject lein-zinc "0.1.0-SNAPSHOT"
+(defproject lein-zinc "1.0.0-SNAPSHOT"
   :description "Typesafe zinc scala incremental compiler plugin"
   :url "https://github.com/k2n/lein-zinc"
   :license {:name "Eclipse Public License"
@@ -14,6 +14,8 @@
   :repositories [["clojars" {:url "https://clojars.org/repo"
                              :cred :gpg}]]
   :deploy-repositories  [["releases" :clojars]]
+  :lein-release  {:deploy-via :clojars
+                  :scm :git}
   :profiles {:dev {:global-vars {*warn-on-reflection* true}
                    :dependencies [[expectations "2.0.13"]]}})
 
