@@ -12,9 +12,8 @@
             (sbt.inc IncOptions)
             (scala Option)))
 
-(defonce default-sources ["src/scala" "src/java"])
-(defonce default-test-sources ["test/scala" "test/java"])
-
+(def default-sources ["src/scala" "src/java"])
+(def default-test-sources ["test/scala" "test/java"])
 
 (defn zinc-setup "Instantiates zinc setup object." [project] 
   (let [{:keys [sbt-version scala-version fork-java?]} project]
@@ -64,22 +63,25 @@
               compile-order         "Mixed"
               mirror-analysis-cache false}} 
                                           (:inputs (:zinc-options project))]
-  (main/debug "classpath: "(map #(core/to-file %) (core/to-seq classpath ":")))
-  (main/debug "sources: " sources)
-  (main/debug "test-sources: " test-sources)
-  (main/debug "analysis-cache: " analysis-cache)
-  (main/debug "analysis-map: " analysis-map)
-  (Inputs/create (map #(core/to-file %) (core/to-seq classpath ":")) 
-                 (if test? (core/sources-file-seq test-sources) 
-                           (core/sources-file-seq sources)) 
-                 (if test? (core/to-file test-classes) (core/to-file classes)) 
-                 scalac-options
-                 javac-options
-                 (if test? (core/to-file test-analysis-cache) 
-                           (core/to-file analysis-cache)) 
-                 (core/map-kv core/to-file analysis-map) 
-                 compile-order inc-options 
-                 mirror-analysis-cache)))
+    (main/debug "classpath: "(map #(core/to-file %) 
+                              (core/to-seq classpath ":")))
+    (main/debug "sources: " sources)
+    (main/debug "test-sources: " test-sources)
+    (main/debug "analysis-cache: " analysis-cache)
+    (main/debug "analysis-map: " analysis-map)
+    (try (Inputs/create (map #(core/to-file %) (core/to-seq classpath ":")) 
+                   (if test? (core/sources-file-seq test-sources) 
+                             (core/sources-file-seq sources)) 
+                   (if test? (core/to-file test-classes) (core/to-file classes)) 
+                   scalac-options
+                   javac-options
+                   (if test? (core/to-file test-analysis-cache) 
+                             (core/to-file analysis-cache)) 
+                   (core/map-kv core/to-file analysis-map) 
+                   compile-order inc-options 
+                   mirror-analysis-cache)
+          (catch Exception e 
+            (main/abort "Invalid parameter. " (.getMessage e))))))
 
 (defn inc-options "Generates options for sbt incremental compiler." [project]
   (let [defaultIncOptions (sbt.inc.IncOptions/Default) 
@@ -104,19 +106,18 @@
         transactional? (option (core/to-file backup)) recompile-on-macro-def 
         name-hashing?))) 
 
-(defn zinc-compile "Compiles Java and Scala source." [project]
+(defn- do-compile  [project test?]
   (let [logger (zinc-logger project)]
     (.compile (^com.typesafe.zinc.Compiler 
                 zincCompiler (zinc-setup project) logger) 
               (zincInputs project 
-              (inc-options project) false) logger)))
+              (inc-options project) test?) logger)))
+
+(defn zinc-compile "Compiles Java and Scala source." [project]
+  (do-compile project false))
 
 (defn zinc-test-compile "Compiles Java and Scala test source." [project]
-  (let [logger (zinc-logger project)]
-    (.compile (^com.typesafe.zinc.Compiler 
-                zincCompiler (zinc-setup project) logger) 
-              (zincInputs project 
-              (inc-options project) true) logger)))
+  (do-compile project true))
 
 (defn- continuous-compile [project sources f]
   (let [{:keys [interval-in-ms] 

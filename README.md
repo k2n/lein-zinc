@@ -11,7 +11,7 @@ A Leiningen plugin to compile scala and java source code with [Typesafe zinc](ht
 
 ## Usage
 
-* Put scala source code under `src/scala`, and test code under `test/scala`.
+* Put scala source code under `src/scala`, and test code under `test/scala`. The directories can be overridden. See 'Avaiable Options' below. 
 * Put `[lein-zinc "0.1.0-SNAPSHOT"]` into the `:plugins` vector of your
 `project.clj`.
 * Add `[org.scala-lang/scala-library "your_scala_version"]` to `:dependencies` of your `project.clj`.
@@ -23,6 +23,12 @@ A Leiningen plugin to compile scala and java source code with [Typesafe zinc](ht
 ```
 
 It triggers compilation of scala source and then scala test source. 
+
+You may get java.lang.OutOfMemoryError: PermGen space. It can be workedaround by adding JVM options. 
+
+```
+   $ LEIN_JVM_OPTS="-XX:MaxPermSize=256m" lein zinc
+```
 
 ## Sub tasks
 
