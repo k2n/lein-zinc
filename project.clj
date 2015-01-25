@@ -12,7 +12,8 @@
             [lein-ancient "0.5.5"]]
   :aliases  {"test"  ["expectations"]}
   :repositories [["clojars" {:url "https://clojars.org/repo"
-                             :cred :gpg}]]
+                             :username [:gpg :env/clojars_username]
+                             :password [:gpg :env/clojars_password]}]]
   :deploy-repositories  [["releases" :clojars]]
   :profiles {:dev {:global-vars {*warn-on-reflection* true}
                    :dependencies [[expectations "2.0.13"]]}})

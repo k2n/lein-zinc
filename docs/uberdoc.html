@@ -2865,7 +2865,7 @@ net.brehaut.ClojureTools = (function (SH) {
     build_tree: build_tree
   };
 })(SyntaxHighlighter);
-</script><title>k2n/lein-zinc -- Marginalia</title></head><body><table><tr><td class="docs"><div class="header"><h1 class="project-name"><a href="https://github.com/k2n/lein-zinc">k2n/lein-zinc</a></h1><h2 class="project-version">1.0.0-SNAPSHOT</h2><br /><p>Typesafe zinc scala incremental compiler plugin</p>
+</script><title>lein-zinc -- Marginalia</title></head><body><table><tr><td class="docs"><div class="header"><h1 class="project-name"><a href="https://github.com/k2n/lein-zinc">lein-zinc</a></h1><h2 class="project-version">0.1.1-SNAPSHOT</h2><br /><p>Typesafe zinc scala incremental compiler plugin</p>
 </div><div class="dependencies"><h3>dependencies</h3><table><tr><td class="dep-name">com.typesafe.zinc/zinc</td><td class="dotted"><hr /></td><td class="dep-version">0.3.5.3</td></tr><tr><td class="dep-name">leiningen</td><td class="dotted"><hr /></td><td class="dep-version">2.5.1</td></tr><tr><td class="dep-name">org.clojure/core.typed</td><td class="dotted"><hr /></td><td class="dep-version">0.2.77</td></tr><tr><td class="dep-name">org.clojure/tools.namespace</td><td class="dotted"><hr /></td><td class="dep-version">0.2.8</td></tr></table></div></td><td class="codes" style="text-align: center; vertical-align: middle;color: #666;padding-right:20px"><br /><br /><br />(this space intentionally left almost blank)</td></tr><tr><td class="docs"><div class="toc"><a name="toc"><h3>namespaces</h3></a><ul><li><a href="#leiningen.zinc">leiningen.zinc</a></li><li><a href="#zinc.core">zinc.core</a></li><li><a href="#zinc.lein">zinc.lein</a></li></ul></div></td><td class="codes">&nbsp;</td></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#leiningen.zinc" name="leiningen.zinc"><h1 class="project-name">leiningen.zinc</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(ns leiningen.zinc
   (:require [leiningen.classpath :as classpath]
@@ -3019,7 +3019,7 @@ net.brehaut.ClojureTools = (function (SH) {
               fork-java? false
               }} project 
         lein-zinc-version (lein/dependency-version 
-                            (lein/plugin project 'k2n/lein-zinc))]
+                            (lein/plugin project 'lein-zinc/lein-zinc))]
   (main/info &quot;scala version: &quot; scala-version)
   (main/info &quot;sbt   version: &quot; sbt-version)
   (main/info &quot;fork java?     &quot; fork-java?)
