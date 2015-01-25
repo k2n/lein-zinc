@@ -1,15 +1,14 @@
 # lein-zinc
 
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/k2n/lein-zinc?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
 A Leiningen plugin to compile scala and java source code with [Typesafe zinc](https://github.com/typesafehub/zinc), which is a stand-alone version of scala incremental compiler forked from sbt. 
 
 [![Circle CI](https://circleci.com/gh/k2n/lein-zinc.svg?style=svg)](https://circleci.com/gh/k2n/lein-zinc)
 [![Dependencies Status](http://jarkeeper.com/k2n/lein-zinc/status.svg)](http://jarkeeper.com/k2n/lein-zinc)
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/k2n/lein-zinc?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ## The latest version
 
-[![Clojars Project](http://clojars.org/lein-zinc/latest-version.svg)](http://clojars.org/lein-zinc)
+[![Clojars Project](http://clojars.org/k2n/lein-zinc/latest-version.svg)](http://clojars.org/k2n/lein-zinc)
 
 ## Usage
 
