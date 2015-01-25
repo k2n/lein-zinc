@@ -62,7 +62,7 @@ Monitor the changes made in test source and compile continuously. Ctrl-C to stop
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
             ;; specify lein-zinc plugin.
-  :plugins [[lein-zinc "0.1.0-SNAPSHOT"]]
+  :plugins [[lein-zinc "see_the_latest_version_above"]]
   :dependencies [[org.clojure/clojure "1.6.0"]
                  ;; scala-library is required and the version specified here 
                  ;; is used to compile if it is not overridden with 'scala-version'
