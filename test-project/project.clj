@@ -3,7 +3,7 @@
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :plugins [[lein-zinc "0.1.2"]]
+  :plugins [[lein-zinc "0.1.3-SNAPSHOT"]]
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [org.scala-lang/scala-library "2.11.4"]]
   :prep-tasks ["zinc" "compile"]
