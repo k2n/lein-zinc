@@ -1,4 +1,4 @@
-(defproject lein-zinc "0.1.3"
+(defproject lein-zinc "0.1.4-SNAPSHOT"
   :description "Typesafe zinc scala incremental compiler plugin"
   :url "https://github.com/k2n/lein-zinc"
   :scm {:name "git"
@@ -16,11 +16,11 @@
   :plugins [[lein-expectations "0.0.8"]
             [lein-ancient "0.6.1"]]
   :aliases  {"test"  ["expectations"]}
-  :repositories [["k2n-clojars" {:url "https://clojars.org/repo"
+  :repositories [["clojars" {:url "https://clojars.org/repo"
                              :username [:env/clojars_username :gpg]
                              :password [:env/clojars_password :gpg]}]]
-  :deploy-repositories  [["releases" :k2n-clojars]
-                         ["snapshots" :k2n-clojars]]
+  :deploy-repositories  [["releases" :clojars]
+                         ["snapshots" :clojars]]
   :signing {:gpg-key "868C4511"}
   :profiles {:dev {:global-vars {*warn-on-reflection* true}
                    :dependencies [[expectations "2.0.13"]]}})
