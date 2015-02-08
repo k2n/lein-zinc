@@ -12,7 +12,7 @@
   :eval-in-leiningen true
   :dependencies [[com.typesafe.zinc/zinc "0.3.5.3"]
                  [leiningen "2.5.1"]
-                 [org.clojure/core.typed "0.2.77"]
+                 [org.clojure/core.typed "0.2.78"]
                  [org.clojure/tools.namespace  "0.2.9"]]
   :plugins [[lein-expectations "0.0.8"]
             [lein-ancient "0.6.1"]]

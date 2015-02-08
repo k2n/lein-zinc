@@ -108,10 +108,11 @@
 
 (defn- do-compile  [project test?]
   (let [logger (zinc-logger project)]
-    (.compile (^com.typesafe.zinc.Compiler 
+    (try (.compile (^com.typesafe.zinc.Compiler 
                 zincCompiler (zinc-setup project) logger) 
               (zincInputs project 
-              (inc-options project) test?) logger)))
+              (inc-options project) test?) logger)
+      (catch Exception e (main/info (.getMessage e))))))
 
 (defn zinc-compile "Compiles Java and Scala source." [project]
   (do-compile project false))
@@ -130,8 +131,9 @@
           (when (not= new-tracker tracker)
             (f project)
             (main/info "compile completed."))
+          
           (Thread/sleep interval-in-ms)
-          (catch Exception ex (.printStackTrace ex)))
+          (catch Exception ex (.getMessage ex)))
         (recur new-tracker)))))
 
 (defn cc 
