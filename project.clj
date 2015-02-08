@@ -16,11 +16,11 @@
   :plugins [[lein-expectations "0.0.8"]
             [lein-ancient "0.6.1"]]
   :aliases  {"test"  ["expectations"]}
-  :repositories [["clojars" {:url "https://clojars.org/repo"
+  :repositories [["k2n-clojars" {:url "https://clojars.org/repo"
                              :username [:env/clojars_username :gpg]
                              :password [:env/clojars_password :gpg]}]]
-  :deploy-repositories  [["releases" :clojars]
-                         ["snapshots" :clojars]]
+  :deploy-repositories  [["releases" :k2n-clojars]
+                         ["snapshots" :k2n-clojars]]
   :signing {:gpg-key "868C4511"}
   :profiles {:dev {:global-vars {*warn-on-reflection* true}
                    :dependencies [[expectations "2.0.13"]]}})
