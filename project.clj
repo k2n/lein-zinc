@@ -16,7 +16,7 @@
   :plugins [[lein-expectations "0.0.8"]
             [lein-ancient "0.6.1"]]
   :aliases  {"test"  ["expectations"]}
-  :repositories [["lein-zin-clojars" {:url "https://clojars.org/repo"
+  :repositories [["lein-zinc-clojars" {:url "https://clojars.org/repo"
                              :username [:env/clojars_username :gpg]
                              :password [:env/clojars_password :gpg]}]]
   :deploy-repositories  [["releases" :lein-zinc-clojars]
