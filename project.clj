@@ -14,7 +14,8 @@
                  [leiningen "2.5.1"]
                  [org.clojure/tools.namespace  "0.2.9"]]
   :plugins [[lein-expectations "0.0.8"]
-            [lein-ancient "0.6.1"]]
+            [lein-ancient "0.6.2"]
+            [lein-cloverage  "1.0.2"]]
   :aliases  {"test"  ["expectations"]}
   :repositories [["k2n-clojars" {:url "https://clojars.org/repo"
                              :username [:env/clojars_username :gpg]
