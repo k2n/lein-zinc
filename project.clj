@@ -10,6 +10,7 @@
                                 [:email "kenjin@clazzsoft.com"]
                                 [:timezone "-8"]]]
   :eval-in-leiningen true
+  :sbt-version "0.13.7"
   :dependencies [[com.typesafe.zinc/zinc "0.3.7"]
                  [leiningen "2.5.1"]
                  [org.clojure/tools.namespace  "0.2.9"]]

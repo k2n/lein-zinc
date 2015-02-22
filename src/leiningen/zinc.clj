@@ -161,7 +161,7 @@
   "Generates lein project profile that contains the configurations necessary 
   to run lein zinc plugin."
   (let [{:keys [sbt-version scala-version fork-java?] 
-         :or {sbt-version "0.13.6"
+         :or {sbt-version "0.13.7"
               scala-version (lein/dependency-version 
                               (lein/dependency project 
                                            'org.scala-lang/scala-library))

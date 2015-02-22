@@ -151,7 +151,7 @@ Continuous compiling options:
 
 General compiler options;
   :scala-version                 Override scala-library version in project.clj
-  :sbt-version                   Default is 0.13.6.
+  :sbt-version                   Default is 0.13.7.
   :fork-java?                    Java compiler runs in a separate process
 ```
 
