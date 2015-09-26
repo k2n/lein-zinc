@@ -4,6 +4,7 @@
             [leiningen.core.project :as project]
             [leiningen.deps :as deps]
             [leiningen.help :as help]
+            [clojure.set :as cs]
             [clojure.tools.namespace.track :as track]
             [zinc.core :as core]
             [zinc.lein :as lein])
@@ -46,23 +47,36 @@
   [zinc-setup zinc-logger]
   (com.typesafe.zinc.Compiler/getOrCreate zinc-setup zinc-logger))
 
+(defn- combine-sources 
+  "Merges leiningen standard source-paths, java-source-paths, and 
+  zinc inputs sources. Zinc input sources is deprecated. Leiningen standard 
+  paths should be used to specify the source paths as it is recognized by 
+  IDEs such as IntelliJ." 
+  [project]
+  (into #{} (cs/union (:source-paths project)
+                      (:java-source-paths project)
+                      [(str (:root project) "/src/java") 
+                       (str (:root project) "/src/scala")])))
+
+(def tmpdir (System/getProperty "java.io.tmpdir"))
+
 (defn zincInputs "Instantiates zinc inputs." [project inc-options test?]
   (let [classpath (classpath/get-classpath-string project)
-        {:keys [sources test-sources classes test-classes scalac-options 
+        {:keys [classes test-classes scalac-options 
                 javac-options analysis-cache test-analysis-cache analysis-map 
                 compile-order mirror-analysis-cache]
-         :or {sources               default-sources
-              test-sources          default-test-sources
-              classes               "target/classes"
+         :or {classes               "target/classes"
               test-classes          "target/test-classes"
               scalac-options        []
               javac-options         []
               analysis-cache        "target/analysis/compile"
               test-analysis-cache   "target/analysis/test-compile"
-              analysis-map          {"/tmp" "/tmp"}
+              analysis-map          {tmpdir tmpdir}
               compile-order         "Mixed"
               mirror-analysis-cache false}} 
-                                          (:inputs (:zinc-options project))]
+                                          (:inputs (:zinc-options project))
+         sources (combine-sources project)
+         test-sources (:test-paths project)]
     (main/debug "classpath: "(map #(core/to-file %) 
                               (core/to-seq classpath ":")))
     (main/debug "sources: " sources)
@@ -141,19 +155,16 @@
    This doesn't compile test source code so you may want run 
    'lein zinc test-cc' task in a separate terminal." 
   [project]
-  (let [{:keys [sources] 
-         :or {sources default-sources}} (:inputs (:zinc-options project))]
-    (main/info "sources:" sources)
-    (continuous-compile project sources zinc-compile)))
+  (let [combined-sources (combine-sources project)]
+    (main/info "sources:" combined-sources)
+    (continuous-compile project combined-sources zinc-compile)))
 
 (defn test-cc 
   "Compiles Java and Scala test sources continuously.
   This doesn't compile main source code so you may want run 
   'lein zinc cc' task in a separate terminal." 
   [project]
-  (let [{:keys [test-sources] 
-         :or {test-sources default-test-sources}} 
-            (:inputs (:zinc-options project))]
+  (let [test-sources (:test-paths project)]
     (main/info "test-sources:" test-sources)
     (continuous-compile project test-sources zinc-test-compile)))
 
@@ -161,7 +172,7 @@
   "Generates lein project profile that contains the configurations necessary 
   to run lein zinc plugin."
   (let [{:keys [sbt-version scala-version fork-java?] 
-         :or {sbt-version "0.13.7"
+         :or {sbt-version "0.13.9"
               scala-version (lein/dependency-version 
                               (lein/dependency project 
                                            'org.scala-lang/scala-library))

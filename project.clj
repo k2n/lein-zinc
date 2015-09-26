@@ -10,10 +10,10 @@
                                 [:email "kenjin@clazzsoft.com"]
                                 [:timezone "-8"]]]
   :eval-in-leiningen true
-  :sbt-version "0.13.7"
-  :dependencies [[com.typesafe.zinc/zinc "0.3.7"]
-                 [leiningen "2.5.1"]
-                 [org.clojure/tools.namespace  "0.2.9"]]
+  :sbt-version "0.13.9"
+  :dependencies [[com.typesafe.zinc/zinc "0.3.9"]
+                 [leiningen "2.5.3"]
+                 [org.clojure/tools.namespace  "0.2.10"]]
   :plugins [[lein-expectations "0.0.8"]
             [lein-ancient "0.6.3"]
             [lein-cloverage  "1.0.2"]]
@@ -25,6 +25,6 @@
                          ["snapshots" :k2n-clojars]]
   :signing {:gpg-key "868C4511"}
   :profiles {:dev {:global-vars {*warn-on-reflection* true}
-                   :dependencies [[expectations "2.0.16"]]}})
+                   :dependencies [[expectations "2.1.3"]]}})
 
 ;; vim: set ts=2 sw=2 cc=80 et: 

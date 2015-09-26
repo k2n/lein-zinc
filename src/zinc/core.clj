@@ -86,7 +86,7 @@
         (file/add-files modified)
         (assoc ::time now))))
 
-(defn scan "doc-string" [tracker dirs]
+(defn scan [tracker dirs]
   (let [files (find-files dirs)
         deleted (seq (deleted-files tracker files))
         modified (seq (modified-files tracker files))]

@@ -7,15 +7,15 @@
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [org.scala-lang/scala-library "2.11.4"]]
   :prep-tasks ["zinc" "compile"]
+  :source-paths ["src/clojure" "src/java" "src/scala"]
+  :test-paths ["test/clojure" "test/java" "test/scala"]
   :profiles {:zinc-custom-options 
               {:zinc-options 
                 {:logging 
                   {:level                 "debug"
                    :colorize?             false}
                  :inputs 
-                   {:sources              ["src/scala" "src/java"] 
-                    :test-sources         ["test/scala" "test/java"]
-                    :classes              "target/classes"
+                   {:classes              "target/classes"
                     :test-classes         "target/test-classes"
                     :scalac-options       ["-unchecked"]
                     :javac-options        ["-deprecation" "-g"]

@@ -3,18 +3,29 @@
 A Leiningen plugin to compile scala and java source code with [Typesafe zinc](https://github.com/typesafehub/zinc), which is a stand-alone version of scala incremental compiler forked from sbt. 
 
 [![Circle CI](https://circleci.com/gh/k2n/lein-zinc.svg?style=svg)](https://circleci.com/gh/k2n/lein-zinc)
-[![Dependencies Status](http://jarkeeper.com/k2n/lein-zinc/status.svg)](http://jarkeeper.com/k2n/lein-zinc)
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/k2n/lein-zinc?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 
 [![Clojars Project](http://clojars.org/lein-zinc/latest-version.svg)](http://clojars.org/lein-zinc)
 
-## Usage
+## Update
+* `sources` and `test-sources` are removed from `:inputs` properties, and observe Leiningen's standard `source-paths`, `java-source-paths`, and `test-paths` from version 0.1.5. 
+The default directories are `src/java` and `src/scala` for main source, and `test` for test sources. Please specify the directory if you want to place the source code 
+somewhere other than the defaults. 
 
-* Put scala source code under `src/scala`, and test code under `test/scala`. The directories can be overridden. See 'Avaiable Options' below. 
+## Usage
+* Specify scala and java source paths in project.clj.
+
+```clojure
+:source-paths ["src/clojure"]
+:java-source-paths ["src/java" "src/scala"]
+:test-paths ["test/clojure" "test/java" "test/scala"]
+```
+
+* Put scala source code under `src/scala`, and test code under `test/scala`. 
 * Put the latest version shown above into the `:plugins` vector of your `project.clj`.
 * Add `[org.scala-lang/scala-library "your_scala_version"]` to `:dependencies` of your `project.clj`.
-* To automically run zinc compiler in regular lifecycle of leiningen, add `["zinc" "compile"]` to `:prep-tasks`. 
+* To automatically run zinc compiler in regular life cycle of leiningen, add `["zinc" "compile"]` to `:prep-tasks`. 
 * Alternatively, run the task directly from the command line.  
 
 ```
@@ -23,7 +34,7 @@ A Leiningen plugin to compile scala and java source code with [Typesafe zinc](ht
 
 It triggers compilation of scala source and then scala test source. 
 
-You may get java.lang.OutOfMemoryError: PermGen space. It can be workedaround by adding JVM options. 
+You may get `java.lang.OutOfMemoryError: PermGen space` in JVM prior to Java 8. It can be worked around by adding JVM options. 
 
 ```
    $ LEIN_JVM_OPTS="-XX:MaxPermSize=256m" lein zinc
@@ -48,12 +59,12 @@ Monitor the changes made in test source and compile continuously. Ctrl-C to stop
     $ lein zinc test-cc
 
 
-## Customizing the behavior
+## Customize behavior
 
 * Create a profile containing `:zinc-options` map. 
 * `:zinc-options` map may contain sub-maps `:logging`, `:inputs`, `:incremental`,
  and/or `:sbt-version`. 
-* See "Avaiable Options" below for the complete guide.
+* See "Available Options" below for the complete guide.
 
 ```clj
 (defproject test-project "0.1.0-SNAPSHOT"
@@ -78,9 +89,7 @@ Monitor the changes made in test source and compile continuously. Ctrl-C to stop
                {:level     "debug"
                 :colorize? false}
                :inputs 
-                {:sources               ["src/scala" "src/java"] 
-                 :test-sources          ["test/scala" "test/java"]
-                 :classes               "target/classes"
+                {:classes               "target/classes"
                  :test-classes          "target/test-classes"
                  :scalac-options        ["-unchecked"]
                  :javac-options         ["-deprecation" "-g"]
@@ -121,8 +130,6 @@ Output options:
 
 Compile options:
   :inputs
-    :sources ["src_dir"...]      List of scala and java source directories
-    :test-sources ["src_dir"...] List of scala/java test source directories   
     :classes "dir"               Destination for compiled classes
     :scalac-options ["opt"...]   Options passed into Scala compiler
     :javac-options ["opt"...]    Options passed into Java compiler
