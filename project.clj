@@ -23,7 +23,7 @@
                              :password [:env/clojars_password :gpg]}]]
   :deploy-repositories  [["releases" :k2n-clojars]
                          ["snapshots" :k2n-clojars]]
-  :signing {:gpg-key "75D0F6B0"}
+  :signing {:gpg-key "868C4511"}
   :profiles {:dev {:global-vars {*warn-on-reflection* true}
                    :dependencies [[expectations "2.1.3"]]}})
 
