@@ -1,4 +1,4 @@
-(defproject lein-zinc "1.0.0-SNAPSHOT"
+(defproject lein-zinc "1.0.0"
   :description "Typesafe zinc scala incremental compiler plugin"
   :url "https://github.com/k2n/lein-zinc"
   :scm {:name "git"
