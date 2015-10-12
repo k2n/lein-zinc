@@ -19,16 +19,14 @@
 (defn java-home 
   "JVM java.home. Returns one level above if the path ends with 'jre'." 
   []
-  (let [home (System/getProperty "java.home")]
-    (if (.endsWith home "/jre") (string/replace home "/jre" "") home)))
+  (let [home (System/getProperty "java.home")
+        path (io/file home)]
+    (if (= (.getName path) "jre") (.getParent path) home)))
 
 (defn to-file 
-  "Converts path to java.io.File. Prepend 'user.dir' if the path is relative." 
+  "Converts absolute or relative path to canonical java.io.File."
   [^String path]
-  (if path
-     (if (.startsWith path "/")
-      (io/file path)
-      (io/file (str (user-dir) "/" path)))))
+  (if path (.getCanonicalFile (io/file path))))
 
 (defn is-dir? "Checks if the given file is a directory or not." [^File file]
   (.isDirectory file))
