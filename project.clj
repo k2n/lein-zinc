@@ -11,8 +11,9 @@
                                 [:timezone "-8"]]]
   :eval-in-leiningen true
   :sbt-version "0.13.9"
-  :dependencies [[com.typesafe.zinc/zinc "0.3.9"]
-                 [leiningen "2.5.3"]
+  :dependencies [[org.clojure/clojure "1.8.0"]
+                 [com.typesafe.zinc/zinc "0.3.9"]
+                 [leiningen "2.6.1"]
                  [org.clojure/tools.namespace  "0.2.10"]]
   :plugins [[lein-expectations "0.0.8"]
             [lein-ancient "0.6.3"]
@@ -25,6 +26,6 @@
                          ["snapshots" :k2n-clojars]]
   :signing {:gpg-key "868C4511"}
   :profiles {:dev {:global-vars {*warn-on-reflection* true}
-                   :dependencies [[expectations "2.1.3"]]}})
+                   :dependencies [[expectations "2.1.8"]]}})
 
 ;; vim: set ts=2 sw=2 cc=80 et: 
